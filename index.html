@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manajemen Project Penilaian</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+        }
+        .table-fixed-layout { table-layout: fixed; }
+        .loader {
+            border: 4px solid #e5e7eb; /* gray-200 */
+            border-top: 4px solid #3b82f6; /* blue-500 */
+            border-radius: 50%; width: 36px; height: 36px;
+            animation: spin 1s linear infinite; margin: 30px auto;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        .dynamic-border-input {
+            border-width: 1px; border-style: solid; border-color: #D1D5DB; /* gray-300 */
+            transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out; 
+        }
+        .dynamic-border-input:focus, 
+        .dynamic-border-input:active { 
+            border-color: #1f2937 !important; /* gray-800 atau hitam */
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25); /* Tailwind focus:ring-blue-500 */
+        }
+        .manual-form-input, .manual-form-select {
+            appearance: none; background-color: #fff; border-width: 1px; border-style: solid;
+            padding: 0.65rem 0.75rem; font-size: 0.95rem; line-height: 1.5; color: #1f2937; 
+        }
+         .manual-form-select {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em;
+            padding-right: 2.5rem;
+        }
+        .btn {
+            transition: all 0.15s ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans antialiased">
+    <div class="container mx-auto my-10 p-6 md:p-8 bg-white rounded-xl shadow-2xl max-w-6xl"> <header class="mb-8 pb-6 border-b border-gray-200">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-800 text-center">Manajemen Project Penilaian</h1>
+        </header>
+
+        <div class="mb-8 text-right">
+            <a href="lembar_penilaian.html" 
+               class="btn bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-6 rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 inline-flex items-center text-base">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                </svg>
+                Tambah Penilaian Baru
+            </a>
+        </div>
+
+        <div>
+            <h2 class="text-xl md:text-2xl font-semibold text-gray-700 mb-6">Daftar Project Tersimpan</h2>
+            
+            <div class="mb-6 flex flex-col sm:flex-row justify-between items-center gap-4 p-4 bg-gray-50 rounded-lg shadow">
+                <input type="text" id="searchProject" placeholder="Cari project berdasarkan nama..." class="manual-form-input dynamic-border-input w-full sm:w-1/2 lg:w-2/3 px-4 py-2.5 rounded-lg shadow-sm">
+                <select id="filterStatus" class="manual-form-select dynamic-border-input w-full sm:w-auto px-4 py-2.5 rounded-lg shadow-sm">
+                    <option value="">Semua Status</option>
+                    <option value="LANJUT">LANJUT</option>
+                    <option value="ULANG">ULANG</option>
+                </select>
+            </div>
+
+            <div id="loadingIndicator" class="loader" style="display: none;"></div>
+            <div class="overflow-x-auto bg-white rounded-lg shadow-lg">
+                <table class="min-w-full table-fixed-layout leading-normal">
+                    <thead>
+                        <tr class="bg-gray-200 text-gray-600 uppercase text-xs sm:text-sm">
+                            <th class="px-4 py-3 border-b-2 border-gray-300 text-left w-[8%]">ID</th>
+                            <th class="px-4 py-3 border-b-2 border-gray-300 text-left w-[30%]">Nama Project</th>
+                            <th class="px-4 py-3 border-b-2 border-gray-300 text-center w-[10%]">Nilai</th>
+                            <th class="px-4 py-3 border-b-2 border-gray-300 text-center w-[12%]">Status</th>
+                            <th class="px-4 py-3 border-b-2 border-gray-300 text-left w-[20%]">Penguji</th>
+                            <th class="px-4 py-3 border-b-2 border-gray-300 text-left w-[15%]">Update</th>
+                            <th class="px-4 py-3 border-b-2 border-gray-300 text-center w-[15%]">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="projectListTableBody" class="text-gray-700">
+                        <tr id="noProjectsMessageRow" style="display:none;">
+                            <td colspan="7" class="px-5 py-10 border-b border-gray-200 text-center text-gray-500">
+                                Tidak ada project yang ditemukan atau data sedang dimuat...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            </div>
+    </div>
+
+    <script>
+        const API_BASE_URL_MANAJEMEN = 'http://localhost/Basdat_project_kel8/api.php/projects'; 
+
+        const projectListTableBody = document.getElementById('projectListTableBody');
+        const searchProjectInput = document.getElementById('searchProject');
+        const filterStatusSelect = document.getElementById('filterStatus');
+        const noProjectsMessageRow = document.getElementById('noProjectsMessageRow');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+
+        let allFetchedProjects = []; 
+
+        async function fetchProjects() {
+            loadingIndicator.style.display = 'block';
+            noProjectsMessageRow.style.display = 'table-row'; 
+            noProjectsMessageRow.cells[0].textContent = 'Sedang memuat data project...';
+
+            try {
+                const response = await fetch(API_BASE_URL_MANAJEMEN);
+                const resultText = await response.text();
+                let projects;
+                try {
+                    projects = JSON.parse(resultText);
+                } catch (e) {
+                    console.error("Gagal parse JSON dari API:", resultText);
+                    throw new Error("Respons API tidak valid (bukan JSON). Isi: " + resultText.substring(0, 200));
+                }
+
+                if (!response.ok) {
+                    throw new Error(projects.error || `HTTP error! status: ${response.status}`);
+                }
+                allFetchedProjects = projects; // Simpan data asli
+                filterAndSearchProjects(); // Render berdasarkan filter (awalnya tanpa filter)
+            } catch (error) {
+                console.error('Gagal memuat daftar project:', error);
+                projectListTableBody.innerHTML = ''; 
+                noProjectsMessageRow.style.display = 'table-row';
+                noProjectsMessageRow.cells[0].textContent = `Gagal memuat data: ${error.message}`;
+                projectListTableBody.appendChild(noProjectsMessageRow);
+            } finally {
+                loadingIndicator.style.display = 'none';
+            }
+        }
+
+        function renderProjectList(projectsToRender) {
+            projectListTableBody.innerHTML = ''; 
+
+            if (projectsToRender.length === 0) {
+                noProjectsMessageRow.style.display = 'table-row';
+                noProjectsMessageRow.cells[0].textContent = (allFetchedProjects.length === 0 && !searchProjectInput.value && !filterStatusSelect.value) ? 'Belum ada project tersimpan.' : 'Tidak ada project yang cocok dengan filter.';
+                projectListTableBody.appendChild(noProjectsMessageRow); 
+                return;
+            }
+            noProjectsMessageRow.style.display = 'none';
+
+            projectsToRender.forEach((project) => { 
+                const row = projectListTableBody.insertRow();
+                row.className = 'bg-white hover:bg-gray-50 transition-colors duration-150';
+
+                row.insertCell().textContent = project.project_id; 
+                row.insertCell().textContent = project.project_name;
+                
+                const scoreCell = row.insertCell();
+                scoreCell.innerHTML = `<span class="font-semibold ${project.overall_total_score >= 64 ? 'text-green-600' : 'text-red-600'}">${project.overall_total_score}</span>`;
+                
+                const statusCell = row.insertCell();
+                if (project.status === 'LANJUT') {
+                    statusCell.innerHTML = `<span class="relative inline-block px-3 py-1 font-semibold text-green-700 leading-tight">
+                                              <span aria-hidden class="absolute inset-0 bg-green-100 opacity-50 rounded-full"></span>
+                                              <span class="relative">LANJUT</span>
+                                          </span>`;
+                } else {
+                    statusCell.innerHTML = `<span class="relative inline-block px-3 py-1 font-semibold text-red-700 leading-tight">
+                                              <span aria-hidden class="absolute inset-0 bg-red-100 opacity-50 rounded-full"></span>
+                                              <span class="relative">ULANG</span>
+                                          </span>`;
+                }
+                row.insertCell().textContent = project.examiner_name || '-';
+                row.insertCell().textContent = project.updated_at ? new Date(project.updated_at).toLocaleString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '-';
+                
+                const actionCell = row.insertCell();
+                actionCell.innerHTML = `<button class="text-blue-600 hover:text-blue-800 font-semibold text-sm focus:outline-none mr-2" onclick="viewProjectDetails('${project.project_id}')">Detail</button>
+                                        <button class="text-red-600 hover:text-red-800 font-semibold text-sm focus:outline-none" onclick="deleteProject('${project.project_id}')">Hapus</button>`;
+                
+                Array.from(row.cells).forEach(cell => {
+                    cell.className += ' px-4 py-3 border-b border-gray-200 text-xs sm:text-sm'; // Padding dan font size disesuaikan
+                });
+                row.cells[0].classList.add('text-left');
+                row.cells[1].classList.add('text-left');
+                row.cells[2].classList.add('text-center');
+                row.cells[3].classList.add('text-center');
+                row.cells[4].classList.add('text-left');
+                row.cells[5].classList.add('text-left');
+                row.cells[6].classList.add('text-center');
+            });
+        }
+
+        function filterAndSearchProjects() {
+            const searchTerm = searchProjectInput.value.toLowerCase();
+            const statusFilter = filterStatusSelect.value;
+
+            const filteredProjects = allFetchedProjects.filter(project => {
+                const nameMatch = project.project_name.toLowerCase().includes(searchTerm);
+                const statusMatch = statusFilter ? project.status === statusFilter : true;
+                return nameMatch && statusMatch;
+            });
+            renderProjectList(filteredProjects);
+        }
+        
+        async function deleteProject(projectId) {
+            if (confirm(`Apakah Anda yakin ingin menghapus project dengan ID ${projectId}?`)) {
+                loadingIndicator.style.display = 'block';
+                try {
+                    const response = await fetch(`${API_BASE_URL_MANAJEMEN}/${projectId}`, {
+                        method: 'DELETE'
+                    });
+                    const resultText = await response.text();
+                    let result;
+                    try {
+                        result = JSON.parse(resultText);
+                    } catch (e) {
+                        console.error("Gagal parse JSON saat hapus:", resultText);
+                        throw new Error("Respons API tidak valid saat hapus (bukan JSON). Isi: " + resultText.substring(0,200));
+                    }
+
+                    if (!response.ok) {
+                        throw new Error(result.error || `HTTP error! status: ${response.status}`);
+                    }
+                    alert(result.message || "Project berhasil dihapus.");
+                    fetchProjects(); 
+                } catch (error) {
+                    console.error('Gagal menghapus project:', error);
+                    alert(`Gagal menghapus project: ${error.message}`);
+                } finally {
+                    loadingIndicator.style.display = 'none';
+                }
+            }
+        }
+
+        function viewProjectDetails(projectId) {
+            window.location.href = `lembar_penilaian.html?projectId=${projectId}&view=true`;
+        }
+
+        searchProjectInput.addEventListener('input', filterAndSearchProjects);
+        filterStatusSelect.addEventListener('change', filterAndSearchProjects);
+
+        fetchProjects();
+    </script>
+</body>
+</html>

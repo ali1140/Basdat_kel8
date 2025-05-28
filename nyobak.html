@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lembar Penilaian Proyek</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f4f7f6; /* Softer background */
+        }
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 1.5rem;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2 {
+            color: #2c3e50; /* Darker heading color */
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        th, td {
+            border: 1px solid #e0e0e0; /* Lighter border */
+            padding: 0.75rem;
+            text-align: left;
+            vertical-align: top;
+        }
+        th {
+            background-color: #e9ecef; /* Light gray header */
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        td {
+            font-size: 0.85rem;
+        }
+        input[type="text"], input[type="number"], textarea {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            box-sizing: border-box;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+        input[type="text"]:focus, input[type="number"]:focus, textarea:focus {
+            border-color: #4A90E2; /* Highlight color */
+            outline: 0;
+            box-shadow: 0 0 0 0.2rem rgba(74, 144, 226, 0.25);
+        }
+        .btn {
+            padding: 0.6rem 1.2rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.2s ease;
+            border: none;
+        }
+        .btn-primary {
+            background-color: #4A90E2; /* Primary button color */
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: #357ABD;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+        .btn-danger {
+            background-color: #e74c3c; /* Danger button color */
+            color: white;
+        }
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+        .btn-sm {
+            padding: 0.3rem 0.6rem;
+            font-size: 0.8rem;
+        }
+        .sub-aspect-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            gap: 0.5rem;
+        }
+        .sub-aspect-item input[type="text"] {
+            flex-grow: 1;
+        }
+        .sub-aspect-item input[type="number"] {
+            width: 80px;
+            flex-shrink: 0;
+        }
+        .totals-section {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background-color: #e9f5ff; /* Light blue for totals */
+            border-radius: 8px;
+        }
+        .totals-section h2 {
+            color: #1a5f9e; /* Darker blue for totals heading */
+        }
+        .totals-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        .total-item {
+            background-color: #fff;
+            padding: 1rem;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .total-item p {
+            margin: 0.3rem 0;
+        }
+        .total-item strong {
+            color: #333;
+        }
+        .status-lanjut {
+            color: green;
+            font-weight: bold;
+        }
+        .status-ulang {
+            color: red;
+            font-weight: bold;
+        }
+        .parameter-header {
+            text-align: center !important;
+            font-weight: bold;
+        }
+        .sub-header th {
+            text-align: center !important;
+            font-size: 0.8rem;
+        }
+        /* Responsive table */
+        .table-container {
+            overflow-x: auto;
+        }
+        /* Custom scrollbar for table container */
+        .table-container::-webkit-scrollbar {
+            height: 8px;
+        }
+        .table-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        .table-container::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+        .table-container::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1000; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto; /* 15% from the top and centered */
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%; /* Could be more or less, depending on screen size */
+            max-width: 500px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .modal-buttons {
+            margin-top: 20px;
+        }
+        .modal-buttons .btn {
+            margin: 0 10px;
+        }
+        #userIdDisplay {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            background-color: rgba(0,0,0,0.7);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            z-index: 1001;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="mb-6 text-center">
+            <h1 class="text-3xl font-bold">LEMBAR PENILAIAN PROYEK</h1>
+            <p class="text-sm text-gray-500" id="docVersion">Doc: v20062024</p>
+        </header>
+
+        <div class="mb-6">
+            <label for="projectName" class="block text-sm font-medium text-gray-700 mb-1">Nama Project:</label>
+            <input type="text" id="projectName" name="projectName" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md">
+        </div>
+        
+        <div class="mb-4 flex justify-between items-center">
+            <h2 class="text-xl font-semibold">Parameter Penilaian</h2>
+            <button id="addChapterBtn" class="btn btn-primary">Tambah Chapter</button>
+        </div>
+
+        <div class="table-container">
+            <table id="assessmentTable">
+                <thead>
+                    <tr>
+                        <th rowspan="2" class="w-12">NO</th>
+                        <th rowspan="2" class="w-1/5">Chapter</th>
+                        <th colspan="2" class="parameter-header">Penguasaan Materi</th>
+                        <th colspan="2" class="parameter-header">Celah Keamanan</th>
+                        <th colspan="2" class="parameter-header">Fitur Utama</th>
+                        <th colspan="2" class="parameter-header">Fitur Pendukung</th>
+                        <th rowspan="2" class="w-20">Aksi Chapter</th>
+                    </tr>
+                    <tr class="sub-header">
+                        <th>Sub-Aspek</th>
+                        <th>Jumlah Kesalahan</th>
+                        <th>Sub-Aspek</th>
+                        <th>Jumlah Kesalahan</th>
+                        <th>Sub-Aspek</th>
+                        <th>Jumlah Kesalahan</th>
+                        <th>Sub-Aspek</th>
+                        <th>Jumlah Kesalahan</th>
+                    </tr>
+                </thead>
+                <tbody id="chaptersContainer">
+                    </tbody>
+            </table>
+        </div>
+
+        <div class="totals-section mt-8">
+            <h2 class="text-xl font-semibold mb-4 text-center">Ringkasan Penilaian</h2>
+            <div class="totals-grid">
+                <div class="total-item">
+                    <p>Total Kesalahan Penguasaan Materi (V): <strong id="totalVMistakes">0</strong></p>
+                </div>
+                <div class="total-item">
+                    <p>Total Kesalahan Celah Keamanan (W): <strong id="totalWMistakes">0</strong></p>
+                </div>
+                <div class="total-item">
+                    <p>Total Kesalahan Fitur Utama (X): <strong id="totalXMistakes">0</strong></p>
+                </div>
+                <div class="total-item">
+                    <p>Total Kesalahan Fitur Pendukung (Y): <strong id="totalYMistakes">0</strong></p>
+                </div>
+                <div class="total-item col-span-full md:col-span-2">
+                    <p class="text-lg">TOTAL KESELURUHAN KESALAHAN: <strong id="overallTotalMistakes" class="text-red-600">0</strong></p>
+                </div>
+                <div class="total-item col-span-full md:col-span-2">
+                    <p class="text-lg">TOTAL NILAI: <strong id="overallTotalScore" class="text-green-600">90</strong></p>
+                </div>
+                 <div class="total-item">
+                    <p>PREDIKAT: <strong id="predicate">Istimewa</strong></p>
+                </div>
+                <div class="total-item">
+                    <p>STATUS: <strong id="status" class="status-lanjut">LANJUT</strong></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-8">
+            <label for="examinerNotes" class="block text-sm font-medium text-gray-700 mb-1">Catatan Penguji:</label>
+            <textarea id="examinerNotes" name="examinerNotes" rows="4" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"></textarea>
+        </div>
+
+        <div class="mt-4 mb-8">
+            <label for="examinerName" class="block text-sm font-medium text-gray-700 mb-1">Nama Penguji:</label>
+            <input type="text" id="examinerName" name="examinerName" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md">
+        </div>
+        
+        <div class="flex justify-end space-x-3 mt-8">
+            <button id="loadDataBtn" class="btn btn-secondary">Muat Data</button>
+            <button id="saveDataBtn" class="btn btn-primary">Simpan Penilaian</button>
+        </div>
+    </div>
+
+    <div id="messageModal" class="modal">
+        <div class="modal-content">
+            <p id="modalMessageText"></p>
+            <div class="modal-buttons">
+                <button id="modalOkButton" class="btn btn-primary">OK</button>
+            </div>
+        </div>
+    </div>
+    <div id="userIdDisplay">User ID: Loading...</div>
+
+    <script type="module">
+        // Firebase SDK imports
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, onSnapshot, updateDoc, collection, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- Firebase Configuration ---
+        // IMPORTANT: Replace with your actual Firebase config object
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID", // This is crucial
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        setLogLevel('debug'); // For development, shows detailed logs
+
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-penilaian-app';
+        let userId = null;
+        let currentProjectData = null;
+        const PROJECT_DOC_ID = "defaultProjectAssessment"; // Using a fixed ID for simplicity, can be dynamic
+
+        // --- UI Elements ---
+        const projectNameInput = document.getElementById('projectName');
+        const chaptersContainer = document.getElementById('chaptersContainer');
+        const addChapterBtn = document.getElementById('addChapterBtn');
+        
+        const totalVMistakesEl = document.getElementById('totalVMistakes');
+        const totalWMistakesEl = document.getElementById('totalWMistakes');
+        const totalXMistakesEl = document.getElementById('totalXMistakes');
+        const totalYMistakesEl = document.getElementById('totalYMistakes');
+        const overallTotalMistakesEl = document.getElementById('overallTotalMistakes');
+        const overallTotalScoreEl = document.getElementById('overallTotalScore');
+        const predicateEl = document.getElementById('predicate');
+        const statusEl = document.getElementById('status');
+        const examinerNotesInput = document.getElementById('examinerNotes');
+        const examinerNameInput = document.getElementById('examinerName');
+        const saveDataBtn = document.getElementById('saveDataBtn');
+        const loadDataBtn = document.getElementById('loadDataBtn');
+        const userIdDisplay = document.getElementById('userIdDisplay');
+
+        // Modal elements
+        const messageModal = document.getElementById('messageModal');
+        const modalMessageText = document.getElementById('modalMessageText');
+        const modalOkButton = document.getElementById('modalOkButton');
+
+        modalOkButton.onclick = function() {
+            messageModal.style.display = "none";
+        }
+        window.onclick = function(event) {
+            if (event.target == messageModal) {
+                messageModal.style.display = "none";
+            }
+        }
+
+        function showModal(message) {
+            modalMessageText.textContent = message;
+            messageModal.style.display = "block";
+        }
+
+
+        // --- Authentication ---
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                userId = user.uid;
+                console.log("User signed in with UID:", userId);
+                userIdDisplay.textContent = `User ID: ${userId}`;
+                await loadInitialData(); // Load data once user is authenticated
+            } else {
+                console.log("User is signed out. Attempting anonymous sign-in.");
+                userIdDisplay.textContent = `User ID: Signing in...`;
+                try {
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                         await signInWithCustomToken(auth, __initial_auth_token);
+                         console.log("Signed in with custom token.");
+                    } else {
+                        await signInAnonymously(auth);
+                        console.log("Signed in anonymously.");
+                    }
+                    // onAuthStateChanged will be triggered again, setting userId and loading data.
+                } catch (error) {
+                    console.error("Error during sign-in:", error);
+                    userIdDisplay.textContent = `User ID: Sign-in failed`;
+                    showModal("Gagal melakukan autentikasi. Beberapa fitur mungkin tidak berfungsi.");
+                }
+            }
+        });
+        
+        // --- Default Data Structure ---
+        function getDefaultChapterData(id, no) {
+            return {
+                id: id || `chapter_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+                no: no,
+                name: `Chapter ${no}`,
+                parameters: {
+                    penguasaanMateri: { name: 'Penguasaan Materi', subAspects: [{ id: `pm_sub_${Date.now()}`, name: 'Materi Basis Data', mistakes: 0 }], totalMistakesCategory: 0 },
+                    celahKeamanan: { name: 'Celah Keamanan', subAspects: [{ id: `ck_sub_${Date.now()}`, name: 'Sanitasi', mistakes: 0 }], totalMistakesCategory: 0 },
+                    fiturUtama: { name: 'Fitur Utama', subAspects: [{ id: `fu_sub_${Date.now()}`, name: 'Create', mistakes: 0 }], totalMistakesCategory: 0 },
+                    fiturPendukung: { name: 'Fitur Pendukung', subAspects: [{ id: `fp_sub_${Date.now()}`, name: 'Responsive', mistakes: 0 }], totalMistakesCategory: 0 }
+                }
+            };
+        }
+
+        function getDefaultProjectData() {
+            return {
+                docVersion: document.getElementById('docVersion').textContent,
+                projectName: '',
+                chapters: [getDefaultChapterData(null, 1)],
+                overallTotalMistakes: { V: 0, W: 0, X: 0, Y: 0, total: 0 },
+                overallTotalScore: 90,
+                predicate: 'Istimewa',
+                status: 'LANJUT',
+                examinerNotes: '',
+                examinerName: '',
+                lastUpdated: new Date().toISOString()
+            };
+        }
+
+        // --- Rendering Functions ---
+        function renderChapter(chapterData) {
+            const chapterRow = document.createElement('tr');
+            chapterRow.setAttribute('data-chapter-id', chapterData.id);
+            chapterRow.innerHTML = `
+                <td>${chapterData.no}</td>
+                <td><input type="text" value="${chapterData.name}" class="chapter-name-input" placeholder="Nama Chapter"></td>
+                ${Object.entries(chapterData.parameters).map(([paramKey, paramData]) => `
+                    <td>
+                        <div class="sub-aspects-container" data-param-key="${paramKey}">
+                            ${paramData.subAspects.map(subAspect => renderSubAspectInput(subAspect, chapterData.id, paramKey)).join('')}
+                        </div>
+                        <button class="btn btn-primary btn-sm mt-2 add-sub-aspect-btn">Tambah Sub-Aspek</button>
+                        <p class="mt-1 text-xs">Total Kesalahan ${paramData.name}: <strong class="category-mistakes-total">0</strong></p>
+                    </td>
+                `).join('')}
+                <td><button class="btn btn-danger btn-sm remove-chapter-btn">Hapus Chapter</button></td>
+            `;
+            chaptersContainer.appendChild(chapterRow);
+
+            // Add event listeners for dynamic elements
+            chapterRow.querySelector('.chapter-name-input').addEventListener('change', (e) => {
+                const chapter = currentProjectData.chapters.find(c => c.id === chapterData.id);
+                if (chapter) chapter.name = e.target.value;
+                calculateAll();
+            });
+
+            chapterRow.querySelectorAll('.add-sub-aspect-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const paramKey = e.target.closest('td').querySelector('.sub-aspects-container').dataset.paramKey;
+                    addOrUpdateSubAspect(chapterData.id, paramKey);
+                });
+            });
+            
+            chapterRow.querySelector('.remove-chapter-btn').addEventListener('click', () => {
+                removeChapter(chapterData.id);
+            });
+
+            // Set initial values for sub-aspects and their event listeners
+            Object.entries(chapterData.parameters).forEach(([paramKey, paramValue]) => {
+                const paramContainer = chapterRow.querySelector(`.sub-aspects-container[data-param-key="${paramKey}"]`);
+                paramValue.subAspects.forEach(subAspect => {
+                    const subAspectDiv = paramContainer.querySelector(`div[data-sub-aspect-id="${subAspect.id}"]`);
+                    if (subAspectDiv) {
+                         subAspectDiv.querySelector('.sub-aspect-name').value = subAspect.name;
+                         subAspectDiv.querySelector('.sub-aspect-mistakes').value = subAspect.mistakes;
+                         attachSubAspectListeners(subAspectDiv, chapterData.id, paramKey, subAspect.id);
+                    }
+                });
+            });
+        }
+
+        function renderSubAspectInput(subAspectData, chapterId, paramKey) {
+            const subAspectId = subAspectData.id || `sub_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+            return `
+                <div class="sub-aspect-item" data-sub-aspect-id="${subAspectId}">
+                    <input type="text" class="sub-aspect-name" value="${subAspectData.name}" placeholder="Nama Sub-Aspek">
+                    <input type="number" class="sub-aspect-mistakes" value="${subAspectData.mistakes}" min="0">
+                    <button class="btn btn-danger btn-sm remove-sub-aspect-btn">X</button>
+                </div>
+            `;
+        }
+        
+        function attachSubAspectListeners(subAspectDiv, chapterId, paramKey, subAspectId) {
+            const nameInput = subAspectDiv.querySelector('.sub-aspect-name');
+            const mistakesInput = subAspectDiv.querySelector('.sub-aspect-mistakes');
+            const removeBtn = subAspectDiv.querySelector('.remove-sub-aspect-btn');
+
+            nameInput.addEventListener('change', (e) => {
+                updateSubAspectData(chapterId, paramKey, subAspectId, 'name', e.target.value);
+            });
+            mistakesInput.addEventListener('input', (e) => { // 'input' for immediate feedback
+                 updateSubAspectData(chapterId, paramKey, subAspectId, 'mistakes', parseInt(e.target.value) || 0);
+            });
+            removeBtn.addEventListener('click', () => {
+                removeSubAspect(chapterId, paramKey, subAspectId);
+            });
+        }
+
+        function renderAllChapters() {
+            chaptersContainer.innerHTML = ''; // Clear existing
+            if (currentProjectData && currentProjectData.chapters) {
+                currentProjectData.chapters.forEach(chapter => renderChapter(chapter));
+            }
+            calculateAll(); // Recalculate and update UI after rendering
+        }
+
+        function renderTotals() {
+            if (!currentProjectData) return;
+            totalVMistakesEl.textContent = currentProjectData.overallTotalMistakes.V;
+            totalWMistakesEl.textContent = currentProjectData.overallTotalMistakes.W;
+            totalXMistakesEl.textContent = currentProjectData.overallTotalMistakes.X;
+            totalYMistakesEl.textContent = currentProjectData.overallTotalMistakes.Y;
+            overallTotalMistakesEl.textContent = currentProjectData.overallTotalMistakes.total;
+            overallTotalScoreEl.textContent = currentProjectData.overallTotalScore;
+            predicateEl.textContent = currentProjectData.predicate;
+            statusEl.textContent = currentProjectData.status;
+            statusEl.className = currentProjectData.status === 'LANJUT' ? 'status-lanjut' : 'status-ulang';
+
+            // Update per-category totals within each chapter row
+            currentProjectData.chapters.forEach(chapter => {
+                const chapterRow = chaptersContainer.querySelector(`tr[data-chapter-id="${chapter.id}"]`);
+                if (chapterRow) {
+                    Object.entries(chapter.parameters).forEach(([paramKey, paramData]) => {
+                        const totalEl = chapterRow.querySelector(`.sub-aspects-container[data-param-key="${paramKey}"]`).closest('td').querySelector('.category-mistakes-total');
+                        if(totalEl) totalEl.textContent = paramData.totalMistakesCategory || 0;
+                    });
+                }
+            });
+        }
+        
+        function updateUIFromData() {
+            if (!currentProjectData) return;
+            projectNameInput.value = currentProjectData.projectName || '';
+            examinerNotesInput.value = currentProjectData.examinerNotes || '';
+            examinerNameInput.value = currentProjectData.examinerName || '';
+            renderAllChapters(); // This will also trigger calculateAll -> renderTotals
+        }
+
+        // --- Data Manipulation & Calculation ---
+        addChapterBtn.addEventListener('click', () => {
+            if (!currentProjectData) currentProjectData = getDefaultProjectData();
+            const newChapterNo = currentProjectData.chapters.length + 1;
+            const newChapter = getDefaultChapterData(null, newChapterNo);
+            currentProjectData.chapters.push(newChapter);
+            renderChapter(newChapter); // Render just the new chapter
+            calculateAll();
+        });
+
+        function removeChapter(chapterId) {
+            if (!currentProjectData) return;
+            currentProjectData.chapters = currentProjectData.chapters.filter(c => c.id !== chapterId);
+            // Re-number chapters
+            currentProjectData.chapters.forEach((c, index) => c.no = index + 1);
+            renderAllChapters(); // Re-render all as numbering might change
+        }
+
+        function addOrUpdateSubAspect(chapterId, paramKey, subAspectData = null) {
+            if (!currentProjectData) return;
+            const chapter = currentProjectData.chapters.find(c => c.id === chapterId);
+            if (!chapter || !chapter.parameters[paramKey]) return;
+
+            const newSubAspectId = `sub_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+            const newSubAspect = subAspectData || { id: newSubAspectId, name: '', mistakes: 0 };
+            if (!subAspectData) { // Only push if it's a new one
+                 chapter.parameters[paramKey].subAspects.push(newSubAspect);
+            }
+            
+            const container = chaptersContainer.querySelector(`tr[data-chapter-id="${chapterId}"] .sub-aspects-container[data-param-key="${paramKey}"]`);
+            if (container) {
+                const subAspectDivHTML = renderSubAspectInput(newSubAspect, chapterId, paramKey);
+                container.insertAdjacentHTML('beforeend', subAspectDivHTML);
+                const addedDiv = container.querySelector(`div[data-sub-aspect-id="${newSubAspect.id}"]`);
+                if(addedDiv) attachSubAspectListeners(addedDiv, chapterId, paramKey, newSubAspect.id);
+            }
+            calculateAll();
+        }
+        
+        function updateSubAspectData(chapterId, paramKey, subAspectId, field, value) {
+            if (!currentProjectData) return;
+            const chapter = currentProjectData.chapters.find(c => c.id === chapterId);
+            if (!chapter) return;
+            const param = chapter.parameters[paramKey];
+            if (!param) return;
+            const subAspect = param.subAspects.find(sa => sa.id === subAspectId);
+            if (!subAspect) return;
+
+            subAspect[field] = value;
+            calculateAll();
+        }
+
+        function removeSubAspect(chapterId, paramKey, subAspectId) {
+            if (!currentProjectData) return;
+            const chapter = currentProjectData.chapters.find(c => c.id === chapterId);
+            if (!chapter || !chapter.parameters[paramKey]) return;
+
+            chapter.parameters[paramKey].subAspects = chapter.parameters[paramKey].subAspects.filter(sa => sa.id !== subAspectId);
+            
+            // Remove from DOM
+            const subAspectDiv = chaptersContainer.querySelector(`div[data-sub-aspect-id="${subAspectId}"]`);
+            if (subAspectDiv) subAspectDiv.remove();
+            
+            calculateAll();
+        }
+
+        function calculateAll() {
+            if (!currentProjectData) return;
+
+            let totalV = 0, totalW = 0, totalX = 0, totalY = 0;
+
+            currentProjectData.chapters.forEach(chapter => {
+                let chapterPenguasaanMistakes = 0;
+                chapter.parameters.penguasaanMateri.subAspects.forEach(sa => chapterPenguasaanMistakes += (parseInt(sa.mistakes) || 0));
+                chapter.parameters.penguasaanMateri.totalMistakesCategory = chapterPenguasaanMistakes;
+                totalV += chapterPenguasaanMistakes;
+
+                let chapterCelahMistakes = 0;
+                chapter.parameters.celahKeamanan.subAspects.forEach(sa => chapterCelahMistakes += (parseInt(sa.mistakes) || 0));
+                chapter.parameters.celahKeamanan.totalMistakesCategory = chapterCelahMistakes;
+                totalW += chapterCelahMistakes;
+
+                let chapterFiturUMistakes = 0;
+                chapter.parameters.fiturUtama.subAspects.forEach(sa => chapterFiturUMistakes += (parseInt(sa.mistakes) || 0));
+                chapter.parameters.fiturUtama.totalMistakesCategory = chapterFiturUMistakes;
+                totalX += chapterFiturUMistakes;
+                
+                let chapterFiturPMistakes = 0;
+                chapter.parameters.fiturPendukung.subAspects.forEach(sa => chapterFiturPMistakes += (parseInt(sa.mistakes) || 0));
+                chapter.parameters.fiturPendukung.totalMistakesCategory = chapterFiturPMistakes;
+                totalY += chapterFiturPMistakes;
+            });
+
+            currentProjectData.overallTotalMistakes = {
+                V: totalV, W: totalW, X: totalX, Y: totalY,
+                total: totalV + totalW + totalX + totalY
+            };
+            
+            currentProjectData.overallTotalScore = 90 - currentProjectData.overallTotalMistakes.total;
+
+            // Predicate and Status
+            const score = currentProjectData.overallTotalScore;
+            if (score >= 86) currentProjectData.predicate = 'Istimewa';
+            else if (score >= 78) currentProjectData.predicate = 'Sangat Baik';
+            else if (score >= 65) currentProjectData.predicate = 'Baik';
+            else currentProjectData.predicate = 'Cukup';
+
+            currentProjectData.status = score < 64 ? 'ULANG' : 'LANJUT';
+            
+            // Update input values from data model
+            currentProjectData.projectName = projectNameInput.value;
+            currentProjectData.examinerNotes = examinerNotesInput.value;
+            currentProjectData.examinerName = examinerNameInput.value;
+
+            renderTotals();
+        }
+        
+        // Attach calculation to relevant inputs
+        projectNameInput.addEventListener('change', calculateAll);
+        examinerNotesInput.addEventListener('change', calculateAll);
+        examinerNameInput.addEventListener('change', calculateAll);
+
+
+        // --- Firestore Interaction ---
+        async function saveData() {
+            if (!userId) {
+                showModal("User belum terautentikasi. Tidak dapat menyimpan data.");
+                console.error("Save aborted: User not authenticated.");
+                return;
+            }
+            if (!currentProjectData) {
+                showModal("Tidak ada data untuk disimpan.");
+                console.error("Save aborted: No current project data.");
+                return;
+            }
+            
+            // Ensure all current UI values are in currentProjectData before saving
+            calculateAll(); // This also syncs inputs like projectName, notes, etc.
+            currentProjectData.lastUpdated = new Date().toISOString();
+
+            const projectDocRef = doc(db, `penilaian_apps/${appId}/projects/${PROJECT_DOC_ID}`);
+            try {
+                await setDoc(projectDocRef, currentProjectData);
+                showModal("Data berhasil disimpan ke Firestore!");
+                console.log("Data saved successfully:", currentProjectData);
+            } catch (error) {
+                showModal("Gagal menyimpan data: " + error.message);
+                console.error("Error saving data to Firestore:", error);
+            }
+        }
+
+        async function loadInitialData() {
+            if (!userId) {
+                console.log("Load aborted: User not authenticated yet.");
+                // Initialize with default if no user, or wait for auth.
+                // For now, let's initialize with default structure if no user,
+                // then onSnapshot will update if data exists once user is authenticated.
+                // currentProjectData = getDefaultProjectData();
+                // updateUIFromData();
+                return;
+            }
+            
+            const projectDocRef = doc(db, `penilaian_apps/${appId}/projects/${PROJECT_DOC_ID}`);
+            
+            // Use onSnapshot for real-time updates (optional, but good for multi-device or collaboration)
+            // For a simpler load/save, you could use getDoc here.
+            onSnapshot(projectDocRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    currentProjectData = docSnap.data();
+                    console.log("Data loaded from Firestore:", currentProjectData);
+                } else {
+                    console.log("No such document! Initializing with default data.");
+                    currentProjectData = getDefaultProjectData();
+                    // Optionally, save this default structure to Firestore immediately
+                    // saveData(); // Be careful not to cause loops if onSnapshot triggers save
+                }
+                updateUIFromData();
+            }, (error) => {
+                console.error("Error listening to document:", error);
+                showModal("Gagal memuat data: " + error.message);
+                // Fallback to default data if listener fails
+                if (!currentProjectData) { // only if not already loaded by a previous successful snapshot
+                    currentProjectData = getDefaultProjectData();
+                    updateUIFromData();
+                }
+            });
+        }
+        
+        // Event Listeners for Save/Load buttons
+        saveDataBtn.addEventListener('click', saveData);
+        loadDataBtn.addEventListener('click', async () => {
+            // This button might be redundant if onSnapshot is used, but can serve as a manual refresh trigger.
+            // For now, it will just re-trigger the logic that onSnapshot handles.
+            if (!userId) {
+                 showModal("User belum terautentikasi. Tidak dapat memuat data.");
+                 return;
+            }
+            const projectDocRef = doc(db, `penilaian_apps/${appId}/projects/${PROJECT_DOC_ID}`);
+            try {
+                const docSnap = await getDoc(projectDocRef);
+                 if (docSnap.exists()) {
+                    currentProjectData = docSnap.data();
+                    console.log("Manual data load successful:", currentProjectData);
+                    showModal("Data berhasil dimuat.");
+                } else {
+                    console.log("No such document for manual load! Initializing with default data.");
+                    currentProjectData = getDefaultProjectData();
+                    showModal("Tidak ada data tersimpan, form diinisialisasi dengan data default.");
+                }
+                updateUIFromData();
+            } catch (error) {
+                console.error("Error manually loading data:", error);
+                showModal("Gagal memuat data secara manual: " + error.message);
+            }
+        });
+
+        // Initialize
+        // loadInitialData is now called via onAuthStateChanged
+        // If you want to start with a default structure visible before auth completes (or if auth fails):
+        if (!currentProjectData) {
+           currentProjectData = getDefaultProjectData();
+           updateUIFromData(); // Render the initial default structure
+        }
+
+    </script>
+</body>
+</html>

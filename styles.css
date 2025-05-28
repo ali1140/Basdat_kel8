@@ -1,0 +1,88 @@
+/* style.css */
+body {
+    /* Font-family sudah diatur oleh Tailwind ('font-sans') */
+    /* Background color sudah diatur oleh Tailwind ('bg-gray-100') */
+}
+
+.container {
+    /* Max-width, margin, padding, dll. sudah diatur oleh Tailwind */
+}
+
+/* Contoh kustomisasi tombol jika diperlukan */
+.btn {
+    /* Tailwind sudah menyediakan class untuk padding, border-radius, dll. */
+    /* Ini adalah contoh jika Anda ingin menambahkan sesuatu yang spesifik */
+    transition: background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    font-weight: 500;
+}
+
+.btn:hover {
+    /* Efek hover bisa lebih spesifik di sini */
+}
+
+.btn-primary {
+    background-color: #3490dc; /* Contoh warna biru */
+    color: white;
+}
+.btn-primary:hover {
+    background-color: #2779bd;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+}
+.btn-secondary:hover {
+    background-color: #5a6268;
+}
+
+.btn-danger {
+    background-color: #e3342f; /* Contoh warna merah */
+    color: white;
+}
+.btn-danger:hover {
+    background-color: #cc1f1a;
+}
+
+.btn-danger-text {
+    color: #e3342f;
+    background-color: transparent;
+}
+.btn-danger-text:hover {
+    color: #cc1f1a;
+    background-color: #fef2f2; /* Light red background on hover */
+}
+
+
+.btn-sm {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.8rem;
+}
+
+.form-input, .form-textarea {
+    /* Tailwind sudah memberikan style dasar yang baik */
+    /* Tambahkan focus style jika ingin kustom */
+}
+.form-input:focus, .form-textarea:focus {
+    border-color: #3490dc;
+    box-shadow: 0 0 0 0.2rem rgba(52, 144, 220, 0.25);
+    outline: none;
+}
+
+.status-lanjut {
+    color: #38a169; /* Hijau */
+    font-weight: bold;
+}
+.status-ulang {
+    color: #e53e3e; /* Merah */
+    font-weight: bold;
+}
+
+/* Styling untuk parameter block dan sub-aspect item agar lebih jelas */
+.parameter-block {
+    /* Sudah ada di HTML dengan Tailwind */
+}
+
+.sub-aspect-item {
+    /* Sudah ada di HTML dengan Tailwind */
+}
