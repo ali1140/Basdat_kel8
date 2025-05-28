@@ -1,7 +1,9 @@
 // script.js
 document.addEventListener('DOMContentLoaded', () => {
+    // --- KONFIGURASI API ---
     const API_BASE_URL = 'http://localhost/Basdat_project_kel8/api.php/projects'; 
 
+    // --- ELEMEN UI ---
     const projectNameInput = document.getElementById('projectName');
     const addParameterBtn = document.getElementById('addParameterBtn');
     const parametersContainer = document.getElementById('parametersContainer');
@@ -24,15 +26,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const subAspectTemplate = document.getElementById('subAspectTemplate');
 
     let currentProjectId = null; 
-    let isFormEditable = true; // Defaultnya form bisa diedit untuk project baru
+    let isFormEditable = true;
 
     let assessmentData = {
         id: null, 
         projectName: '',
         parameters: [], 
         overallTotalMistakes: 0,
-        overallTotalScore: 90, // Nilai awal default
-        predicate: 'Istimewa', // Nilai awal default
+        overallTotalScore: 90, 
+        predicate: 'Istimewa', 
         status: 'LANJUT', 
         examinerNotes: '',
         examinerName: '',
@@ -45,21 +47,18 @@ document.addEventListener('DOMContentLoaded', () => {
         examinerNotesInput.value = assessmentData.examinerNotes || '';
         if (statusSelectEl) statusSelectEl.value = assessmentData.status || 'LANJUT';
 
-        // Update tampilan total berdasarkan data dari server (atau state saat ini)
         overallTotalMistakesEl.textContent = assessmentData.overallTotalMistakes || 0;
         overallTotalScoreEl.textContent = assessmentData.overallTotalScore || 0;
         predicateEl.textContent = assessmentData.predicate || '-';
 
-        // Perbarui warna status select
         if (statusSelectEl) {
             statusSelectEl.classList.remove('status-lanjut-select', 'status-ulang-select');
             if (assessmentData.status === 'LANJUT') statusSelectEl.classList.add('status-lanjut-select');
             else statusSelectEl.classList.add('status-ulang-select');
         }
         
-        renderParameters(); // Render ulang parameter dan sub-aspeknya
+        renderParameters();
     }
-
 
     function renderParameters() {
         parametersContainer.innerHTML = ''; 
@@ -72,7 +71,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 parametersContainer.appendChild(parameterElement);
             });
         }
-        // Tidak ada lagi updateCalculationsAndTotals() di sini, karena data total diambil dari server
     }
 
     function createParameterElement(paramData) {
@@ -84,7 +82,6 @@ document.addEventListener('DOMContentLoaded', () => {
         nameInput.value = paramData.name || '';
         nameInput.addEventListener('change', (e) => paramData.name = e.target.value );
         nameInput.disabled = !isFormEditable;
-
 
         const subAspectsContainer = parameterBlock.querySelector('.sub-aspects-container');
         if (paramData.subAspects && Array.isArray(paramData.subAspects)) {
@@ -99,13 +96,11 @@ document.addEventListener('DOMContentLoaded', () => {
         btnAddSubAspect.disabled = !isFormEditable;
         btnAddSubAspect.style.display = isFormEditable ? 'flex' : 'none';
 
-
         const btnRemoveParam = parameterBlock.querySelector('.remove-parameter-btn');
         btnRemoveParam.addEventListener('click', () => removeParameter(paramData.id) );
         btnRemoveParam.disabled = !isFormEditable;
         btnRemoveParam.style.display = isFormEditable ? 'inline-flex' : 'none';
 
-        // Tampilkan totalMistakes per parameter dari data (dihitung DB)
         updateParameterTotalMistakesDisplay(parameterBlock, paramData.totalMistakes || 0); 
         return parameterBlock;
     }
@@ -124,7 +119,6 @@ document.addEventListener('DOMContentLoaded', () => {
         mistakesInput.value = subAspectData.mistakes || 0;
         mistakesInput.addEventListener('input', (e) => {
             subAspectData.mistakes = parseInt(e.target.value, 10) || 0;
-            // Tidak ada kalkulasi ulang di frontend. Perubahan akan dikirim ke server saat save.
         });
         mistakesInput.disabled = !isFormEditable;
         
@@ -142,13 +136,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function setFormEditableState(editable) {
-        isFormEditable = editable; // Set state global
+        isFormEditable = editable; 
         projectNameInput.disabled = !editable;
         examinerNameInput.disabled = !editable;
         examinerNotesInput.disabled = !editable;
         statusSelectEl.disabled = !editable;
 
-        // Update semua input dan tombol yang sudah ada di DOM
         document.querySelectorAll('.parameter-name, .sub-aspect-name, .sub-aspect-mistakes')
             .forEach(input => input.disabled = !editable);
 
@@ -186,13 +179,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const defaultSubAspectId = `sub_${Date.now()}`;
         newParameter.subAspects.push({ id: defaultSubAspectId, name: 'Sub-Aspek Default', mistakes: 0 });
         renderParameters(); 
-        setFormEditableState(isFormEditable); // Pastikan elemen baru mengikuti state editable
+        setFormEditableState(isFormEditable);
     }
 
     function removeParameter(parameterId) {
         assessmentData.parameters = (assessmentData.parameters || []).filter(p => p.id !== parameterId);
         renderParameters();
-        // Tidak ada kalkulasi ulang di frontend
     }
 
     function addNewSubAspect(parameterId, containerElement) {
@@ -204,8 +196,7 @@ document.addEventListener('DOMContentLoaded', () => {
             parameter.subAspects.push(newSubAspect);
             const subAspectElement = createSubAspectElement(newSubAspect, parameterId);
             containerElement.appendChild(subAspectElement); 
-            setFormEditableState(isFormEditable); // Pastikan elemen baru mengikuti state editable
-            // Tidak ada kalkulasi ulang di frontend
+            setFormEditableState(isFormEditable);
         }
     }
 
@@ -215,20 +206,16 @@ document.addEventListener('DOMContentLoaded', () => {
             parameter.subAspects = parameter.subAspects.filter(sa => sa.id !== subAspectId);
             const subAspectElementToRemove = parametersContainer.querySelector(`.sub-aspect-item[data-sub-aspect-id="${subAspectId}"]`);
             if (subAspectElementToRemove) subAspectElementToRemove.remove();
-            // Tidak ada kalkulasi ulang di frontend
         }
     }
     
     function gatherDataFromUI() {
         const currentDocVersionEl = document.getElementById('docVersion');
-        // Kumpulkan data mentah dari UI ke dalam objek assessmentData
         assessmentData.projectName = projectNameInput.value || "Tanpa Nama Proyek"; 
         assessmentData.examinerNotes = examinerNotesInput.value;
         assessmentData.examinerName = examinerNameInput.value;
         if (statusSelectEl) assessmentData.status = statusSelectEl.value; 
         assessmentData.docVersion = currentDocVersionEl ? currentDocVersionEl.textContent : 'default_v_js';
-        // Data parameter dan sub-aspek sudah terupdate di assessmentData melalui event listeners pada input mereka.
-        // Tidak ada kalkulasi total di sini.
         
         const dataToSend = { ...assessmentData };
         if (!currentProjectId) {
@@ -236,13 +223,12 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             dataToSend.id = currentProjectId; 
         }
-        // Hapus nilai agregat yang akan dihitung DB dari payload kiriman
         delete dataToSend.overallTotalMistakes;
         delete dataToSend.overallTotalScore;
         delete dataToSend.predicate;
         if (dataToSend.parameters) {
             dataToSend.parameters.forEach(param => {
-                delete param.totalMistakes; // Ini hanya untuk UI, DB akan hitung
+                delete param.totalMistakes; 
             });
         }
         return JSON.parse(JSON.stringify(dataToSend)); 
@@ -259,6 +245,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         console.log(`Mengirim data ke ${url} dengan metode ${method}:`, dataToSave);
+        saveDataBtn.disabled = true; // Disable tombol simpan selama proses
+        saveDataBtn.innerHTML = `<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Menyimpan...`;
+
+
         try {
             const response = await fetch(url, {
                 method: method,
@@ -281,31 +271,37 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('Respon dari server (save):', result);
             alert(result.message || "Data berhasil diproses.");
 
-            // Update assessmentData dengan data lengkap dari server, termasuk nilai yang dihitung DB
-            if (result.project) {
-                assessmentData = { ...assessmentData, ...result.project }; // Timpa dengan data dari server
-                // Jika API tidak mengembalikan parameters & subAspects, kita perlu fetch ulang
-                // Untuk sekarang, asumsikan respons 'project' sudah lengkap atau kita fetch ulang
-                await loadProjectData(result.project.project_id || currentProjectId); // Muat ulang untuk data lengkap
-            } else if (method === 'POST' && result.project_id) {
-                 currentProjectId = result.project_id.toString(); 
-                 assessmentData.id = currentProjectId;
-                 await loadProjectData(currentProjectId); // Muat ulang data lengkap
+            if (method === 'POST' && result.project && result.project.project_id) { 
+                // Jika project baru berhasil disimpan, arahkan ke halaman manajemen
+                window.location.href = 'index.html'; // Pastikan nama file ini benar
+                return; // Hentikan eksekusi lebih lanjut di fungsi ini
+            } else if (method === 'PUT' && result.project) {
+                // Jika update, muat ulang data untuk menampilkan nilai terbaru
+                currentProjectId = result.project.project_id.toString();
+                assessmentData.id = currentProjectId;
+                await loadProjectData(currentProjectId);
+                setFormEditableState(false); 
+                updateUIFromAssessmentData();
             } else {
-                 await loadProjectData(currentProjectId); // Muat ulang data untuk update
+                 // Fallback jika struktur respons tidak seperti yang diharapkan
+                 await loadProjectData(currentProjectId || (result.project ? result.project.project_id : null));
+                 setFormEditableState(false);
+                 updateUIFromAssessmentData();
             }
-            
-            window.history.replaceState({}, '', `index.html?projectId=${currentProjectId}&view=true`);
-            setFormEditableState(false); 
-            updateUIFromAssessmentData(); // Perbarui UI dengan data baru dari server
-
         } catch (error) {
             console.error('Gagal menyimpan data:', error);
             alert(`Gagal menyimpan data: ${error.message}`);
+        } finally {
+            saveDataBtn.disabled = false; // Aktifkan kembali tombol simpan
+            saveDataBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg> Simpan Penilaian`;
         }
     }
 
     async function loadProjectData(projectId) { 
+        if (!projectId) {
+            console.warn("loadProjectData dipanggil tanpa projectId.");
+            return;
+        }
         console.log(`Mencoba memuat data untuk Project ID: ${projectId} dari ${API_BASE_URL}/${projectId}`);
         try {
             const response = await fetch(`${API_BASE_URL}/${projectId}`);
@@ -344,7 +340,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 docVersion: loadedData.doc_version || (document.getElementById('docVersion') ? document.getElementById('docVersion').textContent : 'default')
             };
             
-            updateUIFromAssessmentData(); // Perbarui seluruh UI dengan data yang dimuat
+            updateUIFromAssessmentData(); 
             console.log('Data berhasil dimuat dari API:', assessmentData);
         } catch (error) {
             console.error('Gagal memuat data project:', error);
@@ -372,7 +368,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setFormEditableState(true);
     });
     backToManagementBtn.addEventListener('click', () => {
-        window.location.href = 'manajemen_project.html'; 
+        window.location.href = 'index.html'; 
     });
 
     projectNameInput.addEventListener('change', (e) => assessmentData.projectName = e.target.value);
@@ -381,7 +377,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (statusSelectEl) {
         statusSelectEl.addEventListener('change', (e) => {
             assessmentData.status = e.target.value;
-            // Tidak ada updateTotalsDisplay() di sini karena status tidak mempengaruhi kalkulasi
         });
     }
 
@@ -404,7 +399,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 examinerNotes: '', examinerName: '',
                 docVersion: document.getElementById('docVersion') ? document.getElementById('docVersion').textContent : 'default'
             };
-            updateUIFromAssessmentData(); // Tampilkan nilai default
+            updateUIFromAssessmentData(); 
             if (assessmentData.parameters.length === 0) {
                 addNewParameter(); 
             }
