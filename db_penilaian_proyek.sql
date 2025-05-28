@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: May 27, 2025 at 05:22 PM
+-- Generation Time: May 28, 2025 at 06:49 AM
 -- Server version: 8.0.30
 -- PHP Version: 8.1.10
 
@@ -99,8 +99,8 @@ CREATE TABLE `project_parameters` (
 --
 
 INSERT INTO `project_parameters` (`parameter_id_pk`, `project_id`, `parameter_client_id`, `parameter_name`, `total_mistakes_parameter`) VALUES
-(10, 2, 'param_1748365564307', 'Kerja sama tim', 0),
-(11, 2, 'param_1748365566802', 'Kesesuaian', 0);
+(14, 2, 'param_1748365564307', 'Kerja sama tim', 0),
+(15, 2, 'param_1748365566802', 'Kesesuaian', 0);
 
 -- --------------------------------------------------------
 
@@ -121,13 +121,13 @@ CREATE TABLE `sub_aspects` (
 --
 
 INSERT INTO `sub_aspects` (`sub_aspect_id_pk`, `parameter_id_fk`, `sub_aspect_client_id`, `sub_aspect_name`, `mistakes`) VALUES
-(30, 10, 'sub_1748365564307', 'Kekompakan', 1),
-(31, 10, 'sub_1748365581623_bdeg1', 'penyelesaian masalah', 3),
-(32, 10, 'sub_1748365581791_1te2b', 'Komunikasi', 3),
-(33, 11, 'sub_1748365566802', 'hardware', 2),
-(34, 11, 'sub_1748365618780_4dudr', 'software', 2),
-(35, 11, 'sub_1748365618943_fm1ku', 'Machine learning', 4),
-(36, 11, 'sub_1748365619163_rvpho', 'integrasi', 5);
+(44, 14, 'sub_1748365564307', 'Kekompakan', 1),
+(45, 14, 'sub_1748365581623_bdeg1', 'penyelesaian masalah', 3),
+(46, 14, 'sub_1748365581791_1te2b', 'Komunikasi', 3),
+(47, 15, 'sub_1748365566802', 'hardware', 2),
+(48, 15, 'sub_1748365618780_4dudr', 'software', 2),
+(49, 15, 'sub_1748365618943_fm1ku', 'Machine learning', 4),
+(50, 15, 'sub_1748365619163_rvpho', 'integrasi', 5);
 
 --
 -- Indexes for dumped tables
@@ -161,19 +161,19 @@ ALTER TABLE `sub_aspects`
 -- AUTO_INCREMENT for table `projects`
 --
 ALTER TABLE `projects`
-  MODIFY `project_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `project_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT for table `project_parameters`
 --
 ALTER TABLE `project_parameters`
-  MODIFY `parameter_id_pk` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `parameter_id_pk` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
 
 --
 -- AUTO_INCREMENT for table `sub_aspects`
 --
 ALTER TABLE `sub_aspects`
-  MODIFY `sub_aspect_id_pk` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
+  MODIFY `sub_aspect_id_pk` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=80;
 
 --
 -- Constraints for dumped tables
