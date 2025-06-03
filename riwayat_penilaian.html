@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Riwayat Penilaian Proyek Saya</title>
+    <title>Riwayat Proyek Saya</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="style_user.css"> 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -52,13 +52,22 @@
         .user-info-header { padding: 10px 15px; background-color: #e0f2fe; border: 1px solid #bae6fd; border-radius: 8px; margin-bottom:25px; text-align: left; display: flex; justify-content: space-between; align-items: center; }
         .user-info-header p { margin: 0; font-size: 0.95rem; color: #0c4a6e;}
         .user-info-header strong { color: #0369a1; }
+        .action-btn {
+            padding: 0.3rem 0.6rem;
+            font-size: 0.8rem;
+            margin-right: 0.25rem; /* Spacing between buttons */
+            border-radius: 0.25rem;
+        }
+        .action-btn:last-child {
+            margin-right: 0;
+        }
     </style>
 </head>
 <body class="bg-gray-100 font-sans antialiased">
     <div class="user-page-container py-8 px-4"> 
         <div class="user-card max-w-6xl mx-auto"> 
             <header class="mb-8 pb-6 border-b border-gray-200">
-                <h1 class="main-page-title text-3xl md:text-4xl font-bold text-gray-800 text-center">Riwayat Penilaian Proyek Saya</h1>
+                <h1 class="main-page-title text-3xl md:text-4xl font-bold text-gray-800 text-center">Riwayat Proyek Saya</h1>
             </header>
 
              <div id="userInfoHeader" class="user-info-header" style="display:none;">
@@ -68,14 +77,13 @@
                 </button>
             </div>
 
-
             <div class="mb-8 text-right">
                 <a href="upload_project.html" 
                    class="btn bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-6 rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 inline-flex items-center text-base">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" /> 
                     </svg>
-                    Upload Proyek Baru
+                    Kirim Informasi Proyek Baru
                 </a>
             </div>
 
@@ -85,11 +93,9 @@
                 <div class="mb-6 flex flex-col sm:flex-row justify-between items-center gap-4 p-4 bg-gray-50 rounded-lg shadow">
                     <input type="text" id="searchUserProject" placeholder="Cari project berdasarkan nama..." class="manual-form-input dynamic-border-input w-full sm:w-1/2 lg:w-2/3 px-4 py-2.5 rounded-lg shadow-sm">
                     <select id="filterUserStatus" class="manual-form-select dynamic-border-input w-full sm:w-auto px-4 py-2.5 rounded-lg shadow-sm">
-                        <option value="">Semua Status Unggahan</option>
+                        <option value="">Semua Status</option>
+                        <option value="Selesai Dinilai">Sudah Dinilai</option>
                         <option value="Belum Dinilai">Belum Dinilai</option>
-                        <option value="Dalam Penilaian">Dalam Penilaian</option>
-                        <option value="Perlu Revisi">Perlu Revisi</option>
-                        <option value="Selesai Dinilai">Selesai Dinilai</option>
                     </select>
                 </div>
 
@@ -98,18 +104,19 @@
                     <table class="min-w-full table-fixed-layout leading-normal">
                         <thead>
                             <tr class="bg-gray-200 text-gray-600 uppercase text-xs sm:text-sm">
-                                <th class="px-4 py-3 border-b-2 border-gray-300 text-left w-[25%]">Nama Project (Unggahan)</th>
+                                <th class="px-4 py-3 border-b-2 border-gray-300 text-left w-[20%]">Judul Proyek</th>
+                                <th class="px-4 py-3 border-b-2 border-gray-300 text-left w-[20%]">Tim Pengerjaan</th>
                                 <th class="px-4 py-3 border-b-2 border-gray-300 text-center w-[10%]">Nilai Akhir</th>
-                                <th class="px-4 py-3 border-b-2 border-gray-300 text-center w-[15%]">Status Unggahan</th>
-                                <th class="px-4 py-3 border-b-2 border-gray-300 text-center w-[15%]">Status Penilaian</th>
-                                <th class="px-4 py-3 border-b-2 border-gray-300 text-left w-[15%]">Penguji</th>
-                                <th class="px-4 py-3 border-b-2 border-gray-300 text-left w-[15%]">Tgl. Unggah</th>
-                                <th class="px-4 py-3 border-b-2 border-gray-300 text-center w-[15%]">Aksi</th>
+                                <th class="px-4 py-3 border-b-2 border-gray-300 text-center w-[10%]">Status Kiriman</th>
+                                <th class="px-4 py-3 border-b-2 border-gray-300 text-center w-[10%]">Hasil</th>
+                                <th class="px-4 py-3 border-b-2 border-gray-300 text-left w-[10%]">Penguji</th>
+                                <th class="px-4 py-3 border-b-2 border-gray-300 text-left w-[10%]">Tgl. Info</th>
+                                <th class="px-4 py-3 border-b-2 border-gray-300 text-center w-[10%]">Aksi</th>
                             </tr>
                         </thead>
                         <tbody id="userProjectListTableBody" class="text-gray-700">
                             <tr id="noUserProjectsMessageRow" style="display:none;">
-                                <td colspan="7" class="px-5 py-10 border-b border-gray-200 text-center text-gray-500">
+                                <td colspan="8" class="px-5 py-10 border-b border-gray-200 text-center text-gray-500">
                                     Tidak ada project yang ditemukan atau data sedang dimuat...
                                 </td>
                             </tr>
@@ -120,7 +127,7 @@
         </div>
 
     <script>
-        const API_BASE_URL = 'API.php'; // Sesuaikan path jika API.php tidak di root
+        const API_BASE_URL = 'API.php'; 
         const userProjectListTableBody = document.getElementById('userProjectListTableBody');
         const searchUserProjectInput = document.getElementById('searchUserProject');
         const filterUserStatusSelect = document.getElementById('filterUserStatus');
@@ -144,7 +151,7 @@
                     userFullNameHeaderDisplay.textContent = loggedInUser.nama_lengkap;
                     userNrpHeaderDisplay.textContent = loggedInUser.nrp;
                     userInfoHeaderDiv.style.display = 'flex';
-                    await fetchUserSubmissions(); // Panggil fetch setelah user terkonfirmasi
+                    await fetchUserSubmissions(); 
                 } else {
                     window.location.href = 'login.html';
                 }
@@ -165,7 +172,7 @@
         });
 
         async function fetchUserSubmissions() {
-            if (!loggedInUser || !loggedInUser.user_id) { // user_id dari sesi, bukan NRP lagi
+            if (!loggedInUser || !loggedInUser.user_id) { 
                 noUserProjectsMessageRow.style.display = 'table-row';
                 noUserProjectsMessageRow.cells[0].textContent = 'Informasi pengguna tidak valid.';
                 userProjectListTableBody.innerHTML = '';
@@ -179,7 +186,6 @@
             userProjectListTableBody.innerHTML = ''; 
             userProjectListTableBody.appendChild(noUserProjectsMessageRow);
             try {
-                // API akan menggunakan user_id dari sesi, tidak perlu mengirim parameter lagi
                 const response = await fetch(`${API_BASE_URL}/submissions`); 
                 
                 const resultText = await response.text();
@@ -207,12 +213,31 @@
                 loadingIndicatorUser.style.display = 'none';
             }
         }
+        
+        function formatMahasiswaDisplay(dataMahasiswaParsed) {
+            if (!dataMahasiswaParsed || !Array.isArray(dataMahasiswaParsed)) return '<span class="text-gray-500 italic">Data tim tidak tersedia</span>';
+            
+            let html = '';
+            if (dataMahasiswaParsed.length === 1 && (dataMahasiswaParsed[0].status === undefined || dataMahasiswaParsed[0].status !== "Ketua")) {
+                // Individu: tampilkan nama (NRP)
+                html = `<strong>${dataMahasiswaParsed[0].nama || '?'}</strong> (NRP: ${dataMahasiswaParsed[0].nrp || '?'})`;
+            } else {
+                // Kelompok: tampilkan daftar nama (NRP) [status]
+                html = '<ul class="list-none pl-0">'; // Menggunakan list-none untuk kontrol lebih baik
+                dataMahasiswaParsed.forEach(mhs => {
+                    html += `<li><strong>${mhs.nama || '?'}</strong> (NRP: ${mhs.nrp || '?'})${mhs.status === "Ketua" ? ' <em>(Ketua)</em>' : ''}</li>`;
+                });
+                html += '</ul>';
+            }
+            return html;
+        }
 
         function renderUserSubmissionList(submissionsToRender) {
             userProjectListTableBody.innerHTML = ''; 
 
             if (submissionsToRender.length === 0) {
                 noUserProjectsMessageRow.style.display = 'table-row';
+                noUserProjectsMessageRow.cells[0].colSpan = "8"; 
                 noUserProjectsMessageRow.cells[0].textContent = (allUserFetchedSubmissions.length === 0 && !searchUserProjectInput.value && !filterUserStatusSelect.value) ? 'Anda belum memiliki riwayat project.' : 'Tidak ada project yang cocok dengan filter.';
                 userProjectListTableBody.appendChild(noUserProjectsMessageRow);
                 return;
@@ -225,9 +250,12 @@
 
                 row.insertCell().textContent = submission.project_title || '-';
                 
+                const mahasiswaCell = row.insertCell();
+                mahasiswaCell.innerHTML = formatMahasiswaDisplay(submission.data_mahasiswa_parsed);
+                mahasiswaCell.classList.add('text-xs', 'align-top'); // align-top untuk list
+
                 const scoreCell = row.insertCell();
-                scoreCell.textContent = submission.overall_total_score !== null ? submission.overall_total_score : 'N/A';
-                if(submission.overall_total_score !== null){
+                if(submission.overall_total_score !== null && submission.submission_status === 'Selesai Dinilai'){
                     let scoreColor = 'text-gray-700'; 
                     if (submission.overall_total_score >= 86) scoreColor = 'text-green-600 font-bold';
                     else if (submission.overall_total_score >= 78) scoreColor = 'text-lime-600 font-semibold';
@@ -235,19 +263,17 @@
                     else scoreColor = 'text-red-600 font-medium';
                     scoreCell.innerHTML = `<span class="${scoreColor}">${submission.overall_total_score}</span>`;
                 } else {
-                     scoreCell.innerHTML = `<span class="text-gray-500 italic">Belum Dinilai</span>`;
+                     scoreCell.innerHTML = `<span class="text-gray-500 italic">-</span>`;
                 }
                 
                 const submissionStatusCell = row.insertCell();
                 let subStatusText = submission.submission_status || 'N/A';
                 let subStatusBg = 'bg-gray-100'; let subStatusTextClr = 'text-gray-700';
                 if(subStatusText === 'Belum Dinilai') { subStatusBg = 'bg-orange-100'; subStatusTextClr = 'text-orange-700'; }
-                else if(subStatusText === 'Dalam Penilaian') { subStatusBg = 'bg-blue-100'; subStatusTextClr = 'text-blue-700'; }
-                else if(subStatusText === 'Perlu Revisi') { subStatusBg = 'bg-yellow-100'; subStatusTextClr = 'text-yellow-700'; }
                 else if(subStatusText === 'Selesai Dinilai') { subStatusBg = 'bg-green-100'; subStatusTextClr = 'text-green-700'; }
                 submissionStatusCell.innerHTML = `<span class="status-badge ${subStatusBg} ${subStatusTextClr}">${subStatusText}</span>`;
 
-                const penilaianStatusCell = row.insertCell();
+                const penilaianStatusCell = row.insertCell(); 
                 let penStatusText = submission.penilaian_status || 'N/A'; 
                 let penStatusBg = 'bg-gray-100'; let penStatusTextClr = 'text-gray-700';
                 if (submission.submission_status === 'Selesai Dinilai' && submission.penilaian_status) { 
@@ -255,39 +281,44 @@
                     else if(penStatusText === 'ULANG') { penStatusBg = 'bg-red-100'; penStatusTextClr = 'text-red-700'; }
                      penilaianStatusCell.innerHTML = `<span class="status-badge ${penStatusBg} ${subStatusTextClr}">${penStatusText}</span>`;
                 } else {
-                    penilaianStatusCell.innerHTML = `<span class="text-gray-500 italic">Belum Ada</span>`;
+                    penilaianStatusCell.innerHTML = `<span class="text-gray-500 italic">-</span>`;
                 }
                 
                 row.insertCell().textContent = submission.examiner_name || '-';
                 row.insertCell().textContent = submission.upload_timestamp ? new Date(submission.upload_timestamp).toLocaleString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '-';
                 
                 const actionCell = row.insertCell();
-                if (submission.penilaian_project_id && submission.submission_status === 'Selesai Dinilai') { 
-                    // Mahasiswa tidak mengedit, hanya melihat detail penilaian di halaman admin (index.html) dengan mode view
-                    actionCell.innerHTML = `<a href="lembar_penilaian.html?projectId=${submission.penilaian_project_id}&view=true" class="text-blue-600 hover:text-blue-800 font-semibold text-sm focus:outline-none">Lihat Detail Penilaian</a>`;
-                } else if (submission.file_path) {
-                     actionCell.innerHTML = `<a href="${submission.file_path}" target="_blank" class="text-indigo-600 hover:text-indigo-800 font-semibold text-sm focus:outline-none">Download File</a>`;
-                }
-                else {
-                    actionCell.innerHTML = `<span class="text-gray-400 text-sm">Menunggu</span>`;
+                actionCell.classList.add('space-x-1'); // Tambahkan space antar tombol jika ada lebih dari satu
+
+                if (submission.submission_status === 'Selesai Dinilai' && submission.penilaian_project_id) { 
+                    actionCell.innerHTML = `<a href="lembar_penilaian.html?projectId=${submission.penilaian_project_id}&view=true" class="action-btn text-blue-600 hover:text-blue-800 font-semibold focus:outline-none">Detail Penilaian</a>`;
+                } else if (submission.submission_status === 'Belum Dinilai') {
+                    actionCell.innerHTML = `
+                        <a href="detail_submission.html?submission_id=${submission.submission_id}" class="action-btn text-green-600 hover:text-green-800 font-semibold focus:outline-none">Detail Proyek</a>
+                        <a href="upload_project.html?edit_submission_id=${submission.submission_id}" class="action-btn text-yellow-600 hover:text-yellow-800 font-semibold focus:outline-none">Edit</a>
+                    `;
+                } else {
+                    actionCell.innerHTML = `<span class="text-gray-400 text-sm">-</span>`;
                 }
                 
                 Array.from(row.cells).forEach(cell => {
                     cell.className += ' px-4 py-3 border-b border-gray-200 text-xs sm:text-sm';
                 });
+                // Alignment
                 row.cells[0].classList.add('text-left'); 
-                row.cells[1].classList.add('text-center'); 
+                row.cells[1].classList.add('text-left', 'align-top'); 
                 row.cells[2].classList.add('text-center'); 
                 row.cells[3].classList.add('text-center'); 
-                row.cells[4].classList.add('text-left'); 
+                row.cells[4].classList.add('text-center'); 
                 row.cells[5].classList.add('text-left'); 
-                row.cells[6].classList.add('text-center'); 
+                row.cells[6].classList.add('text-left');
+                row.cells[7].classList.add('text-center');
             });
         }
 
         function filterAndSearchUserSubmissions() {
             const searchTerm = searchUserProjectInput.value.toLowerCase();
-            const statusFilter = filterUserStatusSelect.value;
+            const statusFilter = filterUserStatusSelect.value; 
 
             const filteredSubmissions = allUserFetchedSubmissions.filter(submission => {
                 const nameMatch = submission.project_title ? submission.project_title.toLowerCase().includes(searchTerm) : true; 
@@ -300,7 +331,7 @@
         searchUserProjectInput.addEventListener('input', filterAndSearchUserSubmissions);
         filterUserStatusSelect.addEventListener('change', filterAndSearchUserSubmissions);
         
-        checkLoginStatusAndFetchData(); // Panggil fungsi utama
+        checkLoginStatusAndFetchData(); 
     </script>
 </body>
 </html>

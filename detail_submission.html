@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detail Informasi Proyek</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style_user.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+        }
+        .detail-label {
+            font-weight: 600; /* semibold */
+            color: #4b5563; /* gray-600 */
+        }
+        .detail-value {
+            color: #1f2937; /* gray-800 */
+            margin-left: 0.5rem;
+        }
+        .detail-section {
+            margin-bottom: 1.5rem; /* mb-6 */
+            padding-bottom: 1rem; /* pb-4 */
+            border-bottom: 1px solid #e5e7eb; /* border-gray-200 */
+        }
+        .detail-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        .user-info-header { padding: 10px 15px; background-color: #e0f2fe; border: 1px solid #bae6fd; border-radius: 8px; margin-bottom:25px; text-align: left; display: flex; justify-content: space-between; align-items: center; }
+        .user-info-header p { margin: 0; font-size: 0.95rem; color: #0c4a6e;}
+        .user-info-header strong { color: #0369a1; }
+        .loader {
+            border: 4px solid #e5e7eb; 
+            border-top: 4px solid #3b82f6; 
+            border-radius: 50%; width: 36px; height: 36px;
+            animation: spin 1s linear infinite; margin: 30px auto;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="user-page-container py-8 px-4">
+        <div class="user-card max-w-3xl mx-auto">
+            <header class="mb-8 pb-6 border-b border-gray-200">
+                <h1 class="main-page-title text-3xl md:text-4xl font-bold text-gray-800 text-center">Detail Informasi Proyek</h1>
+            </header>
+
+            <div id="userInfoHeaderDetail" class="user-info-header" style="display:none;">
+                <p>Mahasiswa: <strong id="userFullNameHeaderDetail"></strong> (NRP: <strong id="userNrpHeaderDetail"></strong>)</p>
+                 <button id="logoutButtonDetail" class="btn btn-danger btn-sm inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                    <i class="fas fa-sign-out-alt mr-1"></i> Logout
+                </button>
+            </div>
+            
+            <div id="loadingIndicatorDetail" class="loader" style="display: none;"></div>
+            <div id="submissionDetailContent" style="display: none;">
+                <div class="detail-section">
+                    <p><span class="detail-label">Judul Proyek:</span> <span id="detailProjectTitle" class="detail-value"></span></p>
+                </div>
+                <div class="detail-section">
+                    <p><span class="detail-label">Jenis Pengerjaan:</span> <span id="detailJenisPengerjaan" class="detail-value"></span></p>
+                </div>
+                <div class="detail-section">
+                    <p class="detail-label">Tim Pengerjaan:</p>
+                    <div id="detailTimPengerjaan" class="detail-value mt-1"></div>
+                </div>
+                <div class="detail-section">
+                    <p class="detail-label">Deskripsi Proyek/Tugas:</p>
+                    <p id="detailDeskripsiTugas" class="detail-value mt-1 whitespace-pre-wrap"></p>
+                </div>
+                 <div class="detail-section">
+                    <p><span class="detail-label">Tanggal Informasi Dikirim:</span> <span id="detailTanggalUpload" class="detail-value"></span></p>
+                </div>
+            </div>
+            <p id="errorMessageDetail" class="text-red-500 text-center" style="display:none;"></p>
+
+            <div class="navigation-link-bottom mt-10 pt-6 border-t border-gray-200 text-center">
+                <a href="riwayat_penilaian.html" class="btn btn-outline-secondary inline-flex items-center px-6 py-2.5 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    <i class="fas fa-arrow-left mr-2"></i> Kembali ke Riwayat
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL_DETAIL = 'API.php'; 
+        const loadingIndicatorDetail = document.getElementById('loadingIndicatorDetail');
+        const submissionDetailContent = document.getElementById('submissionDetailContent');
+        const errorMessageDetail = document.getElementById('errorMessageDetail');
+        
+        const detailProjectTitle = document.getElementById('detailProjectTitle');
+        const detailJenisPengerjaan = document.getElementById('detailJenisPengerjaan');
+        const detailTimPengerjaan = document.getElementById('detailTimPengerjaan');
+        const detailDeskripsiTugas = document.getElementById('detailDeskripsiTugas');
+        const detailTanggalUpload = document.getElementById('detailTanggalUpload');
+
+        const userInfoHeaderDetailDiv = document.getElementById('userInfoHeaderDetail');
+        const userFullNameHeaderDetailDisplay = document.getElementById('userFullNameHeaderDetail');
+        const userNrpHeaderDetailDisplay = document.getElementById('userNrpHeaderDetail');
+        const logoutButtonDetail = document.getElementById('logoutButtonDetail');
+        let loggedInUserDetail = null;
+
+
+        async function checkLoginStatusDetail() {
+            try {
+                const response = await fetch(`${API_BASE_URL_DETAIL}/auth/session`);
+                const data = await response.json();
+                if (data.loggedIn && data.user.role === 'mahasiswa') {
+                    loggedInUserDetail = data.user;
+                    userFullNameHeaderDetailDisplay.textContent = loggedInUserDetail.nama_lengkap;
+                    userNrpHeaderDetailDisplay.textContent = loggedInUserDetail.nrp;
+                    userInfoHeaderDetailDiv.style.display = 'flex';
+                    return true;
+                } else {
+                    window.location.href = 'login.html';
+                    return false;
+                }
+            } catch (error) {
+                console.error('Error checking session:', error);
+                window.location.href = 'login.html';
+                return false;
+            }
+        }
+
+        logoutButtonDetail.addEventListener('click', async () => {
+            try {
+                await fetch(`${API_BASE_URL_DETAIL}/auth/logout`, { method: 'POST' });
+                window.location.href = 'login.html';
+            } catch (error) {
+                console.error('Logout error:', error);
+                alert('Gagal logout.');
+            }
+        });
+
+        function formatMahasiswaDetailDisplay(dataMahasiswaParsed) {
+            if (!dataMahasiswaParsed || !Array.isArray(dataMahasiswaParsed)) return '<span class="italic">Data tim tidak tersedia</span>';
+            
+            let html = '';
+            if (dataMahasiswaParsed.length === 1 && (dataMahasiswaParsed[0].status === undefined || dataMahasiswaParsed[0].status !== "Ketua")) {
+                html = `<strong>${dataMahasiswaParsed[0].nama || '?'}</strong> (NRP: ${dataMahasiswaParsed[0].nrp || '?'})`;
+            } else {
+                html = '<ul class="list-disc list-inside">';
+                dataMahasiswaParsed.forEach(mhs => {
+                    html += `<li><strong>${mhs.nama || '?'}</strong> (NRP: ${mhs.nrp || '?'})${mhs.status === "Ketua" ? ' <em>(Ketua)</em>' : ''}</li>`;
+                });
+                html += '</ul>';
+            }
+            return html;
+        }
+
+        async function fetchSubmissionDetail() {
+            if (!await checkLoginStatusDetail()) return;
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const submissionId = urlParams.get('submission_id');
+
+            if (!submissionId) {
+                errorMessageDetail.textContent = "ID Submission tidak ditemukan di URL.";
+                errorMessageDetail.style.display = 'block';
+                return;
+            }
+
+            loadingIndicatorDetail.style.display = 'block';
+            submissionDetailContent.style.display = 'none';
+            errorMessageDetail.style.display = 'none';
+
+            try {
+                const response = await fetch(`${API_BASE_URL_DETAIL}/submissions/${submissionId}`);
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || `HTTP error! status: ${response.status}`);
+                }
+                
+                // Periksa apakah submission milik user yang login (jika perlu, API sudah menghandle ini)
+                if (loggedInUserDetail && data.user_id_mahasiswa != loggedInUserDetail.user_id) {
+                     throw new Error("Anda tidak berhak melihat detail submission ini.");
+                }
+
+
+                detailProjectTitle.textContent = data.project_title || '-';
+                detailJenisPengerjaan.textContent = data.jenis_pengerjaan ? (data.jenis_pengerjaan.charAt(0).toUpperCase() + data.jenis_pengerjaan.slice(1)) : '-';
+                
+                if (data.data_mahasiswa_parsed) {
+                    detailTimPengerjaan.innerHTML = formatMahasiswaDetailDisplay(data.data_mahasiswa_parsed);
+                } else {
+                    detailTimPengerjaan.innerHTML = '<span class="italic">Data tim tidak tersedia</span>';
+                }
+                
+                detailDeskripsiTugas.textContent = data.deskripsi_tugas || '-';
+                detailTanggalUpload.textContent = data.upload_timestamp ? new Date(data.upload_timestamp).toLocaleString('id-ID', { dateStyle: 'full', timeStyle: 'short' }) : '-';
+
+                submissionDetailContent.style.display = 'block';
+
+            } catch (error) {
+                console.error('Gagal memuat detail submission:', error);
+                errorMessageDetail.textContent = `Gagal memuat data: ${error.message}`;
+                errorMessageDetail.style.display = 'block';
+            } finally {
+                loadingIndicatorDetail.style.display = 'none';
+            }
+        }
+
+        fetchSubmissionDetail();
+    </script>
+</body>
+</html>

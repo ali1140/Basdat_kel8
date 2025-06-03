@@ -8,7 +8,7 @@ if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
 
-header("Access-Control-Allow-Origin: *"); // Sesuaikan di produksi
+header("Access-Control-Allow-Origin: *"); 
 header("Content-Type: application/json; charset=UTF-8");
 header("Access-Control-Allow-Methods: POST, GET, PUT, DELETE, OPTIONS");
 header("Access-Control-Max-Age: 3600");
@@ -21,55 +21,83 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 
 $conn = create_connection();
 $method = $_SERVER['REQUEST_METHOD'];
-$input = json_decode(file_get_contents('php://input'), true);
+// Untuk PUT, data tidak ada di $input jika form-data, jadi kita akan baca dari $_POST
+if ($method === 'PUT') {
+    // PHP tidak secara otomatis mem-parse multipart/form-data untuk PUT requests.
+    // Jika Anda mengirimkan sebagai application/x-www-form-urlencoded atau application/json, $input akan bekerja.
+    // Untuk FormData via PUT dari JS fetch, kita perlu cara lain atau kirim sebagai POST dengan _method field.
+    // Untuk kesederhanaan saat ini, kita akan asumsikan data PUT dikirim sebagai x-www-form-urlencoded
+    // atau kita akan menggunakan trik dengan POST dan field _method.
+    // Namun, karena kita menggunakan FormData di JS, kita akan coba baca dari $_POST (mungkin perlu konfigurasi server khusus untuk PUT dengan FormData)
+    // Alternatif: Kirim sebagai POST dan tambahkan field _method=PUT
+    
+    // Jika menggunakan FormData dengan method PUT, PHP mungkin tidak mengisi $_POST.
+    // Cara umum adalah menggunakan POST dan field tersembunyi _method="PUT"
+    // atau membaca php://input dan parsing manual jika Content-Type adalah multipart/form-data.
+    // Untuk sekarang, kita akan coba $_POST, tapi ini mungkin tidak reliable untuk PUT dengan FormData.
+    // Jika tidak berhasil, frontend harus mengirim sebagai POST dengan field _method.
+    
+    // Karena JavaScript mengirimkan FormData, kita akan tetap menggunakan $_POST.
+    // Jika ini adalah request PUT sejati, $_POST mungkin kosong.
+    // Cara yang lebih robust adalah frontend mengirimkan request POST dengan field tersembunyi _method="PUT".
+    // Atau, jika Anda benar-benar ingin menggunakan method PUT dengan FormData,
+    // Anda perlu membaca dan mem-parse `php://input` secara manual, yang lebih kompleks.
 
-// --- PATH PARSING LOGIC ---
-$request_uri = $_SERVER['REQUEST_URI'];
-$script_name = $_SERVER['SCRIPT_NAME']; // e.g., /path/to/API.php or /API.php
-
-// Calculate base path of the application if API.php is in a subdirectory
-$base_app_path = dirname($script_name);
-if ($base_app_path === '/' || $base_app_path === '\\') {
-    $base_app_path = ''; // API.php is in the root
+    // Kita akan asumsikan untuk edit, frontend akan mengirimkan data sebagai POST dengan _method="PUT" atau kita handle di routing.
+    // Untuk sekarang, kita akan proses $_POST jika $method adalah PUT (walaupun ini tidak standar)
+    // Atau, lebih baik, kita akan mengharapkan frontend mengirimkan method POST dan kita cek field `_method`
+    if (isset($_POST['_method']) && strtoupper($_POST['_method']) === 'PUT') {
+        // Ini adalah simulasi PUT via POST
+        $input_put = $_POST;
+    } else if ($method === 'PUT') {
+         // Jika benar-benar PUT dan bukan form-data, $input dari file_get_contents('php://input') akan bekerja.
+         // Jika PUT dengan form-data, ini lebih rumit.
+         // Untuk saat ini, kita akan asumsikan $input sudah diisi dengan benar jika methodnya PUT.
+         // Jika tidak, frontend harus menyesuaikan cara mengirim data edit.
+    }
+} else {
+     $input = json_decode(file_get_contents('php://input'), true);
 }
 
-// Remove the base_app_path from the request_uri to get the path relative to the app root
+
+// --- PATH PARSING LOGIC ---
+// ... (Path parsing logic tetap sama) ...
+$request_uri = $_SERVER['REQUEST_URI'];
+$script_name = $_SERVER['SCRIPT_NAME']; 
+
+$base_app_path = dirname($script_name);
+if ($base_app_path === '/' || $base_app_path === '\\') {
+    $base_app_path = ''; 
+}
+
 $path_relative_to_app = substr($request_uri, strlen($base_app_path));
 $path_relative_to_app = ltrim($path_relative_to_app, '/');
 
-// Remove query string from this relative path
 $query_string_pos = strpos($path_relative_to_app, '?');
 if ($query_string_pos !== false) {
     $path_cleaned = substr($path_relative_to_app, 0, $query_string_pos);
 } else {
     $path_cleaned = $path_relative_to_app;
 }
-// $path_cleaned should now be something like "API.php/submissions" or "submissions" 
-// (if .htaccess rewrites to API.php and removes "API.php" segment)
 
 $path_parts = explode('/', $path_cleaned);
 
-// Determine resource, action_or_id based on whether "API.php" is the first segment
 $resource = null;
 $action_or_id = null;
 $sub_action = null;
 
 if (isset($path_parts[0]) && strtolower($path_parts[0]) === 'api.php') {
-    // Handles URLs like /API.php/resource/id or project/API.php/resource/id
     $resource = isset($path_parts[1]) ? $path_parts[1] : null;
     $action_or_id = isset($path_parts[2]) ? $path_parts[2] : null;
     $sub_action = isset($path_parts[3]) ? $path_parts[3] : null;
 } else if (!empty($path_parts[0])) {
-    // Handles URLs like /resource/id (e.g., if .htaccess rewrites to API.php and path doesn't start with API.php)
-    // Or if API.php is in root and URL is like /resource/id (less common without rewrite for API.php itself)
     $resource = $path_parts[0];
     $action_or_id = isset($path_parts[1]) ? $path_parts[1] : null;
     $sub_action = isset($path_parts[2]) ? $path_parts[2] : null;
 }
-// --- END OF PATH PARSING LOGIC ---
-
 
 // --- AUTHENTICATION FUNCTIONS ---
+// ... (Fungsi register_user, login_user, logout_user, check_session tetap sama) ...
 function register_user($conn, $data) {
     if (empty($data['nama_lengkap']) || empty($data['email']) || empty($data['password']) || empty($data['nrp'])) {
         http_response_code(400);
@@ -80,7 +108,7 @@ function register_user($conn, $data) {
     $nama_lengkap = $conn->real_escape_string($data['nama_lengkap']);
     $email = $conn->real_escape_string($data['email']);
     $password = password_hash($data['password'], PASSWORD_BCRYPT);
-    $role = 'mahasiswa'; // Hanya mahasiswa yang bisa register
+    $role = 'mahasiswa'; 
     $nrp = $conn->real_escape_string($data['nrp']);
 
     $stmt_check = $conn->prepare("SELECT user_id FROM users WHERE email = ? OR nrp = ?");
@@ -180,18 +208,17 @@ function check_session() {
     }
 }
 
-
 // --- SUBMISSION FUNCTIONS ---
-function handle_submission_upload($conn) {
+function handle_submission_create($conn) { // Diubah dari handle_submission_upload
     if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'mahasiswa') {
         http_response_code(403);
-        echo json_encode(["error" => "Akses ditolak. Hanya mahasiswa yang bisa mengunggah proyek."]);
+        echo json_encode(["error" => "Akses ditolak. Hanya mahasiswa yang bisa mengirim informasi proyek."]);
         return;
     }
 
-    if (empty($_POST['projectTitle']) || empty($_POST['jenisPengerjaan']) || empty($_FILES['fileUpload'])) {
+    if (empty($_POST['projectTitle']) || empty($_POST['jenisPengerjaan'])) {
         http_response_code(400);
-        echo json_encode(["error" => "Judul proyek, jenis pengerjaan, dan file harus diisi."]);
+        echo json_encode(["error" => "Judul proyek dan jenis pengerjaan harus diisi."]);
         return;
     }
 
@@ -223,6 +250,88 @@ function handle_submission_upload($conn) {
         $data_mahasiswa[] = ["nama" => $_POST['namaKetua'], "nrp" => $_POST['nrpKetua'], "status" => "Ketua"];
         if (isset($_POST['namaAnggota']) && is_array($_POST['namaAnggota'])) {
             foreach ($_POST['namaAnggota'] as $index => $nama_anggota) {
+                 if (!empty($nama_anggota) && isset($_POST['nrpAnggota'][$index]) && !empty($_POST['nrpAnggota'][$index])) {
+                    $data_mahasiswa[] = ["nama" => $nama_anggota, "nrp" => $_POST['nrpAnggota'][$index], "status" => "Anggota"];
+                }
+            }
+        }
+    }
+    $data_mahasiswa_json = json_encode($data_mahasiswa);
+
+    $stmt = $conn->prepare("INSERT INTO submissions (user_id_mahasiswa, project_title, jenis_pengerjaan, data_mahasiswa, deskripsi_tugas, submission_status) VALUES (?, ?, ?, ?, ?, 'Belum Dinilai')");
+    $stmt->bind_param("issss", $user_id_mahasiswa, $project_title, $jenis_pengerjaan, $data_mahasiswa_json, $deskripsi_tugas);
+
+    if ($stmt->execute()) {
+        http_response_code(201);
+        echo json_encode(["message" => "Informasi proyek berhasil dikirim.", "submission_id" => $conn->insert_id]);
+    } else {
+        http_response_code(500);
+        error_log("Gagal menyimpan submission: " . $stmt->error);
+        echo json_encode(["error" => "Gagal menyimpan informasi proyek ke database: " . $stmt->error]);
+    }
+    $stmt->close();
+}
+
+function handle_submission_update($conn, $submission_id_param) {
+    if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'mahasiswa') {
+        http_response_code(403);
+        echo json_encode(["error" => "Akses ditolak."]);
+        return;
+    }
+    $submission_id = (int)$submission_id_param;
+
+    // Cek kepemilikan dan status submission
+    $stmt_check = $conn->prepare("SELECT user_id_mahasiswa, submission_status FROM submissions WHERE submission_id = ?");
+    $stmt_check->bind_param("i", $submission_id);
+    $stmt_check->execute();
+    $result_check = $stmt_check->get_result();
+    if (!($submission_data = $result_check->fetch_assoc())) {
+        http_response_code(404); echo json_encode(["error" => "Submission tidak ditemukan."]); return;
+    }
+    if ($submission_data['user_id_mahasiswa'] != $_SESSION['user_id']) {
+        http_response_code(403); echo json_encode(["error" => "Anda tidak berhak mengedit submission ini."]); return;
+    }
+    if ($submission_data['submission_status'] !== 'Belum Dinilai') {
+        http_response_code(400); echo json_encode(["error" => "Submission ini tidak dapat diedit karena statusnya bukan 'Belum Dinilai'."]); return;
+    }
+    $stmt_check->close();
+
+
+    // Ambil data dari $_POST karena frontend mengirim FormData
+    if (empty($_POST['projectTitle']) || empty($_POST['jenisPengerjaan'])) {
+        http_response_code(400);
+        echo json_encode(["error" => "Judul proyek dan jenis pengerjaan harus diisi."]);
+        return;
+    }
+
+    $project_title = $conn->real_escape_string($_POST['projectTitle']);
+    $jenis_pengerjaan = $conn->real_escape_string($_POST['jenisPengerjaan']);
+    $deskripsi_tugas = isset($_POST['deskripsiTugas']) ? $conn->real_escape_string($_POST['deskripsiTugas']) : null;
+    
+    $data_mahasiswa = [];
+    // Logika untuk mengisi $data_mahasiswa sama seperti di handle_submission_create
+    if ($jenis_pengerjaan === 'individu') {
+        if (empty($_POST['namaIndividu']) || empty($_POST['nrpIndividu'])) {
+             http_response_code(400); echo json_encode(["error" => "Nama dan NRP individu harus diisi."]); return;
+        }
+        if ($_POST['nrpIndividu'] !== $_SESSION['nrp']) { // Pastikan NRP pengedit adalah NRP sesi
+            http_response_code(403);
+            echo json_encode(["error" => "NRP individu yang diinput tidak sesuai dengan NRP pengguna yang login."]);
+            return;
+        }
+        $data_mahasiswa[] = ["nama" => $_POST['namaIndividu'], "nrp" => $_POST['nrpIndividu']];
+    } else { // kelompok
+        if (empty($_POST['namaKetua']) || empty($_POST['nrpKetua'])) {
+             http_response_code(400); echo json_encode(["error" => "Nama dan NRP ketua kelompok harus diisi."]); return;
+        }
+         if ($_POST['nrpKetua'] !== $_SESSION['nrp']) { // Pastikan NRP pengedit adalah NRP sesi
+            http_response_code(403);
+            echo json_encode(["error" => "NRP ketua yang diinput tidak sesuai dengan NRP pengguna yang login."]);
+            return;
+        }
+        $data_mahasiswa[] = ["nama" => $_POST['namaKetua'], "nrp" => $_POST['nrpKetua'], "status" => "Ketua"];
+        if (isset($_POST['namaAnggota']) && is_array($_POST['namaAnggota'])) {
+            foreach ($_POST['namaAnggota'] as $index => $nama_anggota) {
                 if (!empty($nama_anggota) && isset($_POST['nrpAnggota'][$index]) && !empty($_POST['nrpAnggota'][$index])) {
                     $data_mahasiswa[] = ["nama" => $nama_anggota, "nrp" => $_POST['nrpAnggota'][$index], "status" => "Anggota"];
                 }
@@ -231,49 +340,64 @@ function handle_submission_upload($conn) {
     }
     $data_mahasiswa_json = json_encode($data_mahasiswa);
 
-    $target_dir = "uploads/";
-    if (!is_dir($target_dir)) {
-        if (!mkdir($target_dir, 0777, true) && !is_dir($target_dir)) {
-            http_response_code(500);
-            echo json_encode(["error" => "Gagal membuat direktori uploads."]);
-            return;
-        }
-    }
-    $original_file_name = basename($_FILES["fileUpload"]["name"]);
-    $file_extension = strtolower(pathinfo($original_file_name, PATHINFO_EXTENSION));
-    $unique_file_name = uniqid('proj_', true) . "." . $file_extension;
-    $target_file = $target_dir . $unique_file_name;
-    $allowed_extensions = ["zip", "rar", "pdf", "doc", "docx"]; 
-    $max_file_size = 10 * 1024 * 1024; 
+    $stmt = $conn->prepare("UPDATE submissions SET project_title = ?, jenis_pengerjaan = ?, data_mahasiswa = ?, deskripsi_tugas = ? WHERE submission_id = ? AND user_id_mahasiswa = ?");
+    $stmt->bind_param("ssssii", $project_title, $jenis_pengerjaan, $data_mahasiswa_json, $deskripsi_tugas, $submission_id, $_SESSION['user_id']);
 
-    if (!in_array($file_extension, $allowed_extensions)) {
-        http_response_code(400); echo json_encode(["error" => "Format file tidak didukung. Hanya ZIP, RAR, PDF, DOC, DOCX yang diizinkan."]); return;
-    }
-    if ($_FILES["fileUpload"]["size"] > $max_file_size) {
-        http_response_code(400); echo json_encode(["error" => "Ukuran file terlalu besar. Maksimal 10MB."]); return;
-    }
-
-    if (move_uploaded_file($_FILES["fileUpload"]["tmp_name"], $target_file)) {
-        $stmt = $conn->prepare("INSERT INTO submissions (user_id_mahasiswa, project_title, jenis_pengerjaan, data_mahasiswa, deskripsi_tugas, file_path, original_file_name, submission_status) VALUES (?, ?, ?, ?, ?, ?, ?, 'Belum Dinilai')");
-        $stmt->bind_param("issssss", $user_id_mahasiswa, $project_title, $jenis_pengerjaan, $data_mahasiswa_json, $deskripsi_tugas, $target_file, $original_file_name);
-
-        if ($stmt->execute()) {
-            http_response_code(201);
-            echo json_encode(["message" => "Proyek berhasil diunggah.", "submission_id" => $conn->insert_id]);
+    if ($stmt->execute()) {
+        if ($stmt->affected_rows > 0) {
+            http_response_code(200);
+            echo json_encode(["message" => "Informasi proyek berhasil diperbarui."]);
         } else {
-            http_response_code(500);
-            error_log("Gagal menyimpan submission: " . $stmt->error);
-            echo json_encode(["error" => "Gagal menyimpan informasi proyek ke database: " . $stmt->error]);
-            if (file_exists($target_file)) unlink($target_file);
+            http_response_code(200); // Atau 304 Not Modified jika tidak ada perubahan
+            echo json_encode(["message" => "Tidak ada perubahan data atau submission tidak ditemukan/dimiliki."]);
         }
-        $stmt->close();
     } else {
         http_response_code(500);
-        echo json_encode(["error" => "Gagal mengunggah file."]);
+        error_log("Gagal update submission: " . $stmt->error);
+        echo json_encode(["error" => "Gagal update informasi proyek: " . $stmt->error]);
     }
+    $stmt->close();
 }
 
+
+function get_submission_detail($conn, $submission_id_param) {
+    // ... (Fungsi ini tetap sama) ...
+    if (!isset($_SESSION['user_id'])) {
+        http_response_code(403); echo json_encode(["error" => "Akses ditolak. Anda harus login."]); return;
+    }
+    $submission_id = (int)$submission_id_param;
+
+    $query = "
+        SELECT s.*, u.nama_lengkap as nama_pengaju, u.nrp as nrp_pengaju
+        FROM submissions s
+        JOIN users u ON s.user_id_mahasiswa = u.user_id
+        WHERE s.submission_id = ?
+    ";
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param("i", $submission_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($submission = $result->fetch_assoc()) {
+        if ($_SESSION['role'] === 'mahasiswa' && $submission['user_id_mahasiswa'] != $_SESSION['user_id']) {
+            http_response_code(403);
+            echo json_encode(["error" => "Anda tidak berhak melihat detail submission ini."]);
+            $stmt->close();
+            return;
+        }
+        $submission['data_mahasiswa_parsed'] = json_decode($submission['data_mahasiswa'], true);
+        http_response_code(200);
+        echo json_encode($submission);
+    } else {
+        http_response_code(404);
+        echo json_encode(["error" => "Submission tidak ditemukan."]);
+    }
+    $stmt->close();
+}
+
+
 function get_user_submissions($conn) {
+    // ... (Fungsi ini tetap sama) ...
     if (!isset($_SESSION['user_id'])) {
         http_response_code(403); echo json_encode(["error" => "Akses ditolak. Anda harus login."]); return;
     }
@@ -286,7 +410,9 @@ function get_user_submissions($conn) {
     
     if ($user_role === 'mahasiswa') {
         $stmt = $conn->prepare("
-            SELECT s.*, p.overall_total_score, p.status as penilaian_status, u_examiner.nama_lengkap as examiner_name
+            SELECT s.submission_id, s.project_title, s.upload_timestamp, s.submission_status, s.data_mahasiswa, s.penilaian_project_id,
+                   p.overall_total_score, p.status as penilaian_status, 
+                   u_examiner.nama_lengkap as examiner_name
             FROM submissions s
             LEFT JOIN projects p ON s.penilaian_project_id = p.project_id
             LEFT JOIN users u_examiner ON p.examiner_id = u_examiner.user_id
@@ -305,7 +431,9 @@ function get_user_submissions($conn) {
                 if ($user_mahasiswa = $result_user->fetch_assoc()) {
                     $user_id_filter = $user_mahasiswa['user_id'];
                     $stmt = $conn->prepare("
-                        SELECT s.*, p.overall_total_score, p.status as penilaian_status, u_examiner.nama_lengkap as examiner_name
+                        SELECT s.submission_id, s.project_title, s.upload_timestamp, s.submission_status, s.data_mahasiswa, s.penilaian_project_id,
+                               p.overall_total_score, p.status as penilaian_status, 
+                               u_examiner.nama_lengkap as examiner_name
                         FROM submissions s
                         LEFT JOIN projects p ON s.penilaian_project_id = p.project_id
                         LEFT JOIN users u_examiner ON p.examiner_id = u_examiner.user_id
@@ -320,17 +448,14 @@ function get_user_submissions($conn) {
             }
         } elseif (isset($_GET['status']) && $_GET['status'] === 'belum_dinilai') {
             $stmt = $conn->prepare("
-                SELECT s.*, u_mahasiswa.nama_lengkap as nama_mahasiswa, u_mahasiswa.nrp as nrp_mahasiswa
+                SELECT s.submission_id, s.project_title, s.upload_timestamp, s.submission_status, s.data_mahasiswa, s.penilaian_project_id,
+                       u_mahasiswa.nama_lengkap as nama_mahasiswa, u_mahasiswa.nrp as nrp_mahasiswa
                 FROM submissions s
                 JOIN users u_mahasiswa ON s.user_id_mahasiswa = u_mahasiswa.user_id
                 WHERE s.penilaian_project_id IS NULL OR s.submission_status = 'Belum Dinilai'
                 ORDER BY s.upload_timestamp ASC
             ");
         } else {
-            // Admin trying to get all submissions without specific filter (potentially large dataset)
-            // For now, let's restrict this or require a filter.
-            // Or, implement pagination if "all" is needed.
-            // For this case, if no valid admin filter, return empty or error.
             http_response_code(400); echo json_encode(["error" => "Filter spesifik dibutuhkan untuk admin mengambil submissions (cth: status=belum_dinilai)."]); return;
         }
     } else {
@@ -345,20 +470,22 @@ function get_user_submissions($conn) {
         }
         $result = $stmt->get_result();
         while ($row = $result->fetch_assoc()) {
+            if (isset($row['data_mahasiswa'])) {
+                $row['data_mahasiswa_parsed'] = json_decode($row['data_mahasiswa'], true);
+            }
             $submissions[] = $row;
         }
         $stmt->close();
         echo json_encode($submissions);
     } elseif ($user_role === 'admin' && !isset($_GET['user_identifier_nrp']) && !(isset($_GET['status']) && $_GET['status'] === 'belum_dinilai')) {
-        // This condition is already handled by the specific error message above.
-        // This 'else' might not be strictly necessary if all admin paths set $stmt or return.
+        // Handled
     } else {
          http_response_code(500); echo json_encode(["error" => "Gagal menyiapkan statement untuk mengambil submissions."]);
     }
 }
 
-
 // --- PROJECT (PENILAIAN) FUNCTIONS ---
+// ... (Fungsi-fungsi penilaian tetap sama) ...
 function call_recalculate_project_totals_procedure($conn, $project_id) {
     $stmt_proc = $conn->prepare("CALL RecalculateProjectTotals(?)");
     if (!$stmt_proc) {
@@ -378,7 +505,9 @@ function get_all_projects_for_admin($conn) {
     if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
         http_response_code(403); echo json_encode(["error" => "Akses ditolak."]); return;
     }
-    $sql = "SELECT p.project_id, p.project_name, p.examiner_name, p.status, p.overall_total_mistakes, p.overall_total_score, p.predicate_text, p.updated_at, s.project_title as submission_title, u.nama_lengkap as student_name
+    $sql = "SELECT p.project_id, p.project_name, p.examiner_name, p.status, p.overall_total_mistakes, p.overall_total_score, p.predicate_text, p.updated_at, 
+                   s.project_title as submission_title, s.data_mahasiswa, 
+                   u.nama_lengkap as student_name 
             FROM projects p
             LEFT JOIN submissions s ON p.submission_id = s.submission_id
             LEFT JOIN users u ON s.user_id_mahasiswa = u.user_id
@@ -390,6 +519,9 @@ function get_all_projects_for_admin($conn) {
             $row['project_id'] = (string)$row['project_id'];
             $row['overall_total_mistakes'] = (int)$row['overall_total_mistakes'];
             $row['overall_total_score'] = (int)$row['overall_total_score'];
+            if (isset($row['data_mahasiswa'])) {
+                $row['data_mahasiswa_parsed'] = json_decode($row['data_mahasiswa'], true);
+            }
             $projects[] = $row;
         }
     }
@@ -397,12 +529,18 @@ function get_all_projects_for_admin($conn) {
 }
 
 function get_project_details_for_admin($conn, $project_id_param) {
-     if (!isset($_SESSION['user_id']) || (!($_SESSION['role'] === 'admin' || $_SESSION['role'] === 'mahasiswa'))) { // Mahasiswa juga bisa lihat detail
-        http_response_code(403); echo json_encode(["error" => "Akses ditolak."]); return;
+     if (!isset($_SESSION['user_id']) ) { 
+        http_response_code(403); echo json_encode(["error" => "Akses ditolak. Anda harus login."]); return;
     }
     $project_id = (int)$project_id_param;
     $project_data = null;
-    $stmt_project = $conn->prepare("SELECT p.*, s.project_title as submission_project_title, s.file_path as submission_file_path, s.original_file_name as submission_original_file_name, u_mhs.nama_lengkap as nama_mahasiswa_submission, u_mhs.nrp as nrp_mahasiswa_submission
+    $stmt_project = $conn->prepare("SELECT p.*, 
+                                           s.project_title as submission_project_title, 
+                                           s.file_path as submission_file_path, 
+                                           s.original_file_name as submission_original_file_name, 
+                                           s.data_mahasiswa as submission_data_mahasiswa, 
+                                           u_mhs.nama_lengkap as nama_mahasiswa_submission, 
+                                           u_mhs.nrp as nrp_mahasiswa_submission
                                     FROM projects p 
                                     LEFT JOIN submissions s ON p.submission_id = s.submission_id
                                     LEFT JOIN users u_mhs ON s.user_id_mahasiswa = u_mhs.user_id
@@ -415,7 +553,6 @@ function get_project_details_for_admin($conn, $project_id_param) {
     if ($result_project && $result_project->num_rows > 0) {
         $project_data = $result_project->fetch_assoc();
 
-        // Jika mahasiswa, pastikan dia hanya bisa melihat project yang terkait dengannya
         if ($_SESSION['role'] === 'mahasiswa') {
             $stmt_check_owner = $conn->prepare("SELECT s.user_id_mahasiswa FROM projects pr JOIN submissions s ON pr.submission_id = s.submission_id WHERE pr.project_id = ? AND s.user_id_mahasiswa = ?");
             $stmt_check_owner->bind_param("ii", $project_id, $_SESSION['user_id']);
@@ -426,10 +563,12 @@ function get_project_details_for_admin($conn, $project_id_param) {
             $stmt_check_owner->close();
         }
 
-
         $project_data['project_id'] = (string)$project_data['project_id']; 
         $project_data['overall_total_mistakes'] = (int)$project_data['overall_total_mistakes'];
         $project_data['overall_total_score'] = (int)$project_data['overall_total_score'];
+        if (isset($project_data['submission_data_mahasiswa'])) {
+            $project_data['submission_data_mahasiswa_parsed'] = json_decode($project_data['submission_data_mahasiswa'], true);
+        }
         $project_data['parameters'] = [];
 
         $stmt_params = $conn->prepare("SELECT parameter_id_pk, parameter_client_id, parameter_name, total_mistakes_parameter FROM project_parameters WHERE project_id = ?");
@@ -476,6 +615,7 @@ function get_project_details_for_admin($conn, $project_id_param) {
 }
 
 function save_project_assessment($conn, $data) {
+    // ... (fungsi ini tetap sama) ...
     if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
         http_response_code(403); echo json_encode(["error" => "Akses ditolak."]); return;
     }
@@ -567,6 +707,7 @@ function save_project_assessment($conn, $data) {
 }
 
 function update_project_assessment($conn, $project_id_param, $data) {
+    // ... (fungsi ini tetap sama) ...
     if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
         http_response_code(403); echo json_encode(["error" => "Akses ditolak."]); return;
     }
@@ -649,6 +790,7 @@ function update_project_assessment($conn, $project_id_param, $data) {
 }
 
 function delete_project_assessment($conn, $project_id_param) {
+    // ... (fungsi ini tetap sama) ...
     if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
         http_response_code(403); echo json_encode(["error" => "Akses ditolak."]); return;
     }
@@ -695,10 +837,10 @@ function delete_project_assessment($conn, $project_id_param) {
     }
 }
 
-
 // --- ROUTING ---
 switch ($resource) {
     case 'auth':
+        // ... (Routing auth tetap sama) ...
         if ($method == 'POST' && $action_or_id == 'register') {
             register_user($conn, $input);
         } elseif ($method == 'POST' && $action_or_id == 'login') {
@@ -713,35 +855,50 @@ switch ($resource) {
         break;
 
     case 'submissions':
-        if ($method == 'POST') { 
-            handle_submission_upload($conn); 
+        if ($method == 'POST' && empty($action_or_id)) { // Create new submission
+            handle_submission_create($conn); 
+        } elseif ($method === 'POST' && isset($_POST['_method']) && strtoupper($_POST['_method']) === 'PUT' && $action_or_id) { // Edit submission via POST with _method
+            handle_submission_update($conn, $action_or_id);
+        } elseif ($method == 'PUT' && $action_or_id) { // True PUT request for editing submission
+             // Untuk PUT dengan FormData, data ada di $_POST jika server dikonfigurasi dengan benar
+             // atau jika Anda menggunakan library untuk parsing. Untuk kesederhanaan, kita akan
+             // mengharapkan frontend mengirimkan data edit via POST dengan _method=PUT,
+             // atau jika frontend mengirim PUT dengan application/x-www-form-urlencoded, $input akan berisi data.
+             // Jika frontend mengirim PUT dengan application/json, $input juga akan berisi data.
+             // Karena frontend kita mengirim FormData, kita akan mengandalkan $_POST di dalam handle_submission_update.
+             // Ini adalah penyederhanaan; cara yang lebih RESTful adalah frontend mengirim PUT dengan Content-Type yang sesuai.
+            handle_submission_update($conn, $action_or_id); // Data akan diambil dari $_POST di dalam fungsi
         } elseif ($method == 'GET') { 
-            get_user_submissions($conn); 
+            if ($action_or_id) { 
+                get_submission_detail($conn, $action_or_id);
+            } else { 
+                get_user_submissions($conn); 
+            }
         } else {
             http_response_code(405); echo json_encode(["error" => "Metode request tidak didukung untuk submissions."]);
         }
         break;
 
-    case 'projects': // Penilaian oleh Admin
-        // Akses ke 'projects' (penilaian) bisa oleh admin (CRUD) atau mahasiswa (GET detail)
-        if ($method === 'GET' && $action_or_id) { // Get specific project detail
-             get_project_details_for_admin($conn, $action_or_id); // Fungsi ini sudah ada check role internal
-        } elseif ($method === 'GET' && !$action_or_id) { // Admin GET all assessed projects
+    case 'projects': 
+        // ... (Routing projects tetap sama) ...
+        if ($method === 'GET' && $action_or_id) { 
+             get_project_details_for_admin($conn, $action_or_id); 
+        } elseif ($method === 'GET' && !$action_or_id) { 
             if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                  http_response_code(403); echo json_encode(["error" => "Akses ditolak untuk melihat semua penilaian."]); break;
             }
             get_all_projects_for_admin($conn);
-        } elseif ($method === 'POST') { // Admin creates new assessment
+        } elseif ($method === 'POST') { 
             if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                  http_response_code(403); echo json_encode(["error" => "Akses ditolak untuk membuat penilaian."]); break;
             }
             save_project_assessment($conn, $input);
-        } elseif ($method === 'PUT' && $action_or_id) { // Admin updates assessment
+        } elseif ($method === 'PUT' && $action_or_id) { 
              if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                  http_response_code(403); echo json_encode(["error" => "Akses ditolak untuk update penilaian."]); break;
             }
             update_project_assessment($conn, $action_or_id, $input);
-        } elseif ($method === 'DELETE' && $action_or_id) { // Admin deletes assessment
+        } elseif ($method === 'DELETE' && $action_or_id) { 
             if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                  http_response_code(403); echo json_encode(["error" => "Akses ditolak untuk menghapus penilaian."]); break;
             }
@@ -753,10 +910,9 @@ switch ($resource) {
         
     default:
         http_response_code(404);
-        // Tambahkan debug info jika resource tidak null tapi tidak dikenali
         if ($resource !== null) {
             error_log("Endpoint tidak ditemukan. Resource yang diminta: " . $resource . " | Path parts: " . json_encode($path_parts) . " | Cleaned Path: " . $path_cleaned);
-            echo json_encode(["error" => "Endpoint tidak ditemukan. Resource: '" . $resource . "' tidak valid."]);
+            echo json_encode(["error" => "Endpoint tidak ditemukan. Resource: '" . htmlspecialchars($resource) . "' tidak valid."]);
         } else {
             error_log("Endpoint tidak ditemukan. Resource adalah null. Path parts: " . json_encode($path_parts) . " | Cleaned Path: " . $path_cleaned);
             echo json_encode(["error" => "Endpoint tidak ditemukan. Tidak ada resource yang diminta."]);
