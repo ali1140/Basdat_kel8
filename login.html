@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="loginstyle.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        .error-message {
+            color: red;
+            font-size: 0.9em;
+            margin-top: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="left-panel">
+            <img src="https://placehold.co/500x400/ffffff/007bff?text=Lambang+Institusi" alt="Ilustrasi" class="illustration-img">
+        </div>
+        <div class="right-panel">
+            <div class="login-box">
+                <h1>Selamat Datang!</h1>
+                <h2>Login untuk Melanjutkan</h2>
+                <form id="loginForm">
+                    <div class="input-group">
+                        <i class="fas fa-envelope"></i>
+                        <input type="email" id="email" name="email" placeholder="Alamat Email" required>
+                    </div>
+                    <div class="input-group">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="password" name="password" placeholder="Password" required>
+                    </div>
+                    <button type="submit" class="login-button">Login</button>
+                </form>
+                <div id="errorMessage" class="error-message" style="display:none;"></div>
+                <div class="login-link" style="margin-top: 15px;">
+                    Belum punya akun? <a href="register.html">Daftar di sini (Mahasiswa)</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const errorMessageDiv = document.getElementById('errorMessage');
+            const loginButton = this.querySelector('.login-button');
+
+            loginButton.disabled = true;
+            loginButton.textContent = 'Memproses...';
+            errorMessageDiv.style.display = 'none';
+            errorMessageDiv.textContent = '';
+
+            try {
+                const response = await fetch('API.php/auth/login', { // Pastikan path API.php benar
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password }),
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    // Login berhasil
+                    alert(result.message); // atau tampilkan pesan sukses yang lebih baik
+                    if (result.user && result.user.role === 'admin') {
+                        window.location.href = 'index.html'; // Halaman manajemen project (admin)
+                    } else if (result.user && result.user.role === 'mahasiswa') {
+                        window.location.href = 'riwayat_penilaian.html'; // Halaman riwayat project (mahasiswa)
+                    } else {
+                        // Fallback jika role tidak dikenali, mungkin ke halaman dashboard umum
+                        window.location.href = 'index.html'; 
+                    }
+                } else {
+                    // Login gagal
+                    errorMessageDiv.textContent = result.error || 'Login gagal. Silakan coba lagi.';
+                    errorMessageDiv.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                errorMessageDiv.textContent = 'Terjadi kesalahan. Silakan coba lagi nanti.';
+                errorMessageDiv.style.display = 'block';
+            } finally {
+                loginButton.disabled = false;
+                loginButton.textContent = 'Login';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrasi Mahasiswa</title>
+    <link rel="stylesheet" href="style_register.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        .error-message {
+            color: red;
+            font-size: 0.9em;
+            margin-top: 10px;
+            text-align: center;
+        }
+         .success-message {
+            color: green;
+            font-size: 0.9em;
+            margin-top: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="left-panel">
+             <img src="https://placehold.co/500x400/ffffff/007bff?text=Lambang+Institusi" alt="Ilustrasi Registrasi" class="illustration-img">
+        </div>
+        <div class="right-panel">
+            <div class="register-box">
+                <h1>Buat Akun Baru</h1>
+                <h2>Khusus untuk Mahasiswa</h2>
+                <form id="registerForm">
+                    <div class="input-group">
+                        <i class="fas fa-user"></i>
+                        <input type="text" id="nama_lengkap" name="nama_lengkap" placeholder="Nama Lengkap" required>
+                    </div>
+                    <div class="input-group">
+                        <i class="fas fa-id-card"></i>
+                        <input type="text" id="nrp" name="nrp" placeholder="NRP (Nomor Registrasi Pokok)" required>
+                    </div>
+                    <div class="input-group">
+                        <i class="fas fa-envelope"></i>
+                        <input type="email" id="email" name="email" placeholder="Alamat Email" required>
+                    </div>
+                    <div class="input-group">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="password" name="password" placeholder="Password" required>
+                    </div>
+                     <div class="input-group">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="confirm_password" name="confirm_password" placeholder="Konfirmasi Password" required>
+                    </div>
+                    <button type="submit" class="register-button">Register</button>
+                </form>
+                <div id="messageDiv" class="" style="display:none;"></div>
+                <div class="login-link">
+                    Sudah punya akun? <a href="login.html">Login di sini</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const nama_lengkap = document.getElementById('nama_lengkap').value;
+            const nrp = document.getElementById('nrp').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const confirm_password = document.getElementById('confirm_password').value;
+            const messageDiv = document.getElementById('messageDiv');
+            const registerButton = this.querySelector('.register-button');
+
+            registerButton.disabled = true;
+            registerButton.textContent = 'Memproses...';
+            messageDiv.style.display = 'none';
+            messageDiv.className = ''; // Reset class
+            messageDiv.textContent = '';
+
+            if (password !== confirm_password) {
+                messageDiv.textContent = 'Password dan konfirmasi password tidak cocok.';
+                messageDiv.className = 'error-message';
+                messageDiv.style.display = 'block';
+                registerButton.disabled = false;
+                registerButton.textContent = 'Register';
+                return;
+            }
+
+            try {
+                const response = await fetch('API.php/auth/register', { // Pastikan path API.php benar
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ nama_lengkap, nrp, email, password, role: 'mahasiswa' }),
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    messageDiv.textContent = result.message + " Anda akan diarahkan ke halaman login.";
+                    messageDiv.className = 'success-message';
+                    messageDiv.style.display = 'block';
+                    // Redirect to login page after a short delay
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 3000);
+                } else {
+                    messageDiv.textContent = result.error || 'Registrasi gagal. Silakan coba lagi.';
+                    messageDiv.className = 'error-message';
+                    messageDiv.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                messageDiv.textContent = 'Terjadi kesalahan. Silakan coba lagi nanti.';
+                messageDiv.className = 'error-message';
+                messageDiv.style.display = 'block';
+            } finally {
+                registerButton.disabled = false;
+                registerButton.textContent = 'Register';
+            }
+        });
+    </script>
+</body>
+</html>

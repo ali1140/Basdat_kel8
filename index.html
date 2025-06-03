@@ -5,27 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manajemen Project Penilaian</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         body {
             font-family: 'Inter', sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
         }
         .table-fixed-layout { table-layout: fixed; }
         .loader {
-            border: 4px solid #e5e7eb; /* gray-200 */
-            border-top: 4px solid #3b82f6; /* blue-500 */
+            border: 4px solid #e5e7eb; border-top: 4px solid #3b82f6; 
             border-radius: 50%; width: 36px; height: 36px;
             animation: spin 1s linear infinite; margin: 30px auto;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
         .dynamic-border-input {
-            border-width: 1px; border-style: solid; border-color: #D1D5DB; /* gray-300 */
+            border-width: 1px; border-style: solid; border-color: #D1D5DB;
             transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out; 
         }
-        .dynamic-border-input:focus, 
-        .dynamic-border-input:active { 
-            border-color: #1f2937 !important; /* gray-800 atau hitam */
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25); /* Tailwind focus:ring-blue-500 */
+        .dynamic-border-input:focus, .dynamic-border-input:active { 
+            border-color: #1f2937 !important; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
         }
         .manual-form-input, .manual-form-select {
             appearance: none; background-color: #fff; border-width: 1px; border-style: solid;
@@ -36,33 +34,54 @@
             background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em;
             padding-right: 2.5rem;
         }
-        .btn {
-            transition: all 0.15s ease-in-out;
-        }
+        .btn { transition: all 0.15s ease-in-out; }
+        /* Modal Styles */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5); }
+        .modal-content { background-color: #fefefe; margin: 10% auto; padding: 25px; border: 1px solid #888; width: 80%; max-width: 700px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .modal-header { padding-bottom: 15px; border-bottom: 1px solid #e5e5e5; display: flex; justify-content: space-between; align-items: center;}
+        .modal-header h2 { margin: 0; font-size: 1.5rem; color: #333; }
+        .close-button { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
+        .close-button:hover, .close-button:focus { color: black; text-decoration: none; }
+        .modal-body { padding-top: 15px; max-height: 60vh; overflow-y: auto;}
+        .modal-body table { width: 100%; border-collapse: collapse; }
+        .modal-body th, .modal-body td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 0.9rem;}
+        .modal-body th { background-color: #f2f2f2; }
+        .modal-footer { padding-top: 15px; text-align: right; border-top: 1px solid #e5e5e5; margin-top:15px;}
+        .admin-info-header { padding: 10px 15px; background-color: #e0e7ff; border: 1px solid #c7d2fe; border-radius: 8px; margin-bottom:25px; text-align: left; display: flex; justify-content: space-between; align-items: center; }
+        .admin-info-header p { margin: 0; font-size: 0.95rem; color: #3730a3;}
+        .admin-info-header strong { color: #4338ca; }
     </style>
 </head>
 <body class="bg-gray-100 font-sans antialiased">
-    <div class="container mx-auto my-10 p-6 md:p-8 bg-white rounded-xl shadow-2xl max-w-6xl"> <header class="mb-8 pb-6 border-b border-gray-200">
+    <div class="container mx-auto my-10 p-6 md:p-8 bg-white rounded-xl shadow-2xl max-w-6xl"> 
+        <header class="mb-8 pb-6 border-b border-gray-200">
             <h1 class="text-3xl md:text-4xl font-bold text-gray-800 text-center">Manajemen Project Penilaian</h1>
         </header>
 
+        <div id="adminInfoHeader" class="admin-info-header" style="display:none;">
+            <p>Admin: <strong id="adminFullNameHeader"></strong> (<span id="adminEmailHeader"></span>)</p>
+            <button id="logoutButtonAdmin" class="btn btn-danger btn-sm inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                <i class="fas fa-sign-out-alt mr-1"></i> Logout
+            </button>
+        </div>
+
         <div class="mb-8 text-right">
-            <a href="lembar_penilaian.html" 
+            <button id="openSubmissionModalBtn" 
                class="btn bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-6 rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 inline-flex items-center text-base">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
                     <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
                 </svg>
-                Tambah Penilaian Baru
-            </a>
+                Tambah Penilaian Baru (Pilih Proyek)
+            </button>
         </div>
 
         <div>
-            <h2 class="text-xl md:text-2xl font-semibold text-gray-700 mb-6">Daftar Project Tersimpan</h2>
+            <h2 class="text-xl md:text-2xl font-semibold text-gray-700 mb-6">Daftar Project Telah Dinilai</h2>
             
             <div class="mb-6 flex flex-col sm:flex-row justify-between items-center gap-4 p-4 bg-gray-50 rounded-lg shadow">
-                <input type="text" id="searchProject" placeholder="Cari project berdasarkan nama..." class="manual-form-input dynamic-border-input w-full sm:w-1/2 lg:w-2/3 px-4 py-2.5 rounded-lg shadow-sm">
+                <input type="text" id="searchProject" placeholder="Cari project dinilai berdasarkan nama..." class="manual-form-input dynamic-border-input w-full sm:w-1/2 lg:w-2/3 px-4 py-2.5 rounded-lg shadow-sm">
                 <select id="filterStatus" class="manual-form-select dynamic-border-input w-full sm:w-auto px-4 py-2.5 rounded-lg shadow-sm">
-                    <option value="">Semua Status</option>
+                    <option value="">Semua Status Penilaian</option>
                     <option value="LANJUT">LANJUT</option>
                     <option value="ULANG">ULANG</option>
                 </select>
@@ -73,45 +92,123 @@
                 <table class="min-w-full table-fixed-layout leading-normal">
                     <thead>
                         <tr class="bg-gray-200 text-gray-600 uppercase text-xs sm:text-sm">
-                            <th class="px-4 py-3 border-b-2 border-gray-300 text-left w-[8%]">ID</th>
-                            <th class="px-4 py-3 border-b-2 border-gray-300 text-left w-[30%]">Nama Project</th>
-                            <th class="px-4 py-3 border-b-2 border-gray-300 text-center w-[10%]">Nilai</th>
-                            <th class="px-4 py-3 border-b-2 border-gray-300 text-center w-[12%]">Status</th>
-                            <th class="px-4 py-3 border-b-2 border-gray-300 text-left w-[20%]">Penguji</th>
-                            <th class="px-4 py-3 border-b-2 border-gray-300 text-left w-[15%]">Update</th>
+                            <th class="px-4 py-3 border-b-2 border-gray-300 text-left w-[5%]">ID</th>
+                            <th class="px-4 py-3 border-b-2 border-gray-300 text-left w-[25%]">Nama Project (Penilaian)</th>
+                            <th class="px-4 py-3 border-b-2 border-gray-300 text-left w-[20%]">Judul Unggahan Asli</th>
+                             <th class="px-4 py-3 border-b-2 border-gray-300 text-left w-[15%]">Mahasiswa</th>
+                            <th class="px-4 py-3 border-b-2 border-gray-300 text-center w-[8%]">Nilai</th>
+                            <th class="px-4 py-3 border-b-2 border-gray-300 text-center w-[10%]">Status</th>
+                            <th class="px-4 py-3 border-b-2 border-gray-300 text-left w-[12%]">Penguji</th>
                             <th class="px-4 py-3 border-b-2 border-gray-300 text-center w-[15%]">Aksi</th>
                         </tr>
                     </thead>
                     <tbody id="projectListTableBody" class="text-gray-700">
                         <tr id="noProjectsMessageRow" style="display:none;">
-                            <td colspan="7" class="px-5 py-10 border-b border-gray-200 text-center text-gray-500">
+                            <td colspan="8" class="px-5 py-10 border-b border-gray-200 text-center text-gray-500">
                                 Tidak ada project yang ditemukan atau data sedang dimuat...
                             </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
-            </div>
+        </div>
     </div>
 
-    <script>
-        const API_BASE_URL_MANAJEMEN = 'http://localhost/Basdat_project_kel8/api.php/projects'; 
+    <div id="submissionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Pilih Proyek yang Akan Dinilai</h2>
+                <span class="close-button" id="closeSubmissionModalBtn">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="loadingSubmissionsIndicator" class="loader" style="display: none;"></div>
+                <table id="submissionsToAssessTable">
+                    <thead>
+                        <tr>
+                            <th>ID Unggahan</th>
+                            <th>Judul Proyek Unggahan</th>
+                            <th>Mahasiswa</th>
+                            <th>NRP</th>
+                            <th>Tgl Unggah</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="submissionsToAssessTableBody">
+                        </tbody>
+                </table>
+                <p id="noSubmissionsToAssessMsg" style="display:none; text-align:center; padding:20px;">Tidak ada proyek baru yang perlu dinilai.</p>
+            </div>
+        </div>
+    </div>
 
+
+    <script>
+        const API_BASE_URL = 'API.php'; 
         const projectListTableBody = document.getElementById('projectListTableBody');
         const searchProjectInput = document.getElementById('searchProject');
         const filterStatusSelect = document.getElementById('filterStatus');
         const noProjectsMessageRow = document.getElementById('noProjectsMessageRow');
         const loadingIndicator = document.getElementById('loadingIndicator');
+        
+        const adminInfoHeaderDiv = document.getElementById('adminInfoHeader');
+        const adminFullNameHeaderDisplay = document.getElementById('adminFullNameHeader');
+        const adminEmailHeaderDisplay = document.getElementById('adminEmailHeader');
+        const logoutButtonAdmin = document.getElementById('logoutButtonAdmin');
 
         let allFetchedProjects = []; 
+        let loggedInAdmin = null;
 
-        async function fetchProjects() {
+        // Modal elements
+        const submissionModal = document.getElementById('submissionModal');
+        const openSubmissionModalBtn = document.getElementById('openSubmissionModalBtn');
+        const closeSubmissionModalBtn = document.getElementById('closeSubmissionModalBtn');
+        const submissionsToAssessTableBody = document.getElementById('submissionsToAssessTableBody');
+        const loadingSubmissionsIndicator = document.getElementById('loadingSubmissionsIndicator');
+        const noSubmissionsToAssessMsg = document.getElementById('noSubmissionsToAssessMsg');
+
+
+        async function checkAdminLoginStatus() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/auth/session`);
+                const data = await response.json();
+                if (data.loggedIn && data.user.role === 'admin') {
+                    loggedInAdmin = data.user;
+                    adminFullNameHeaderDisplay.textContent = loggedInAdmin.nama_lengkap;
+                    adminEmailHeaderDisplay.textContent = loggedInAdmin.email;
+                    adminInfoHeaderDiv.style.display = 'flex';
+                    await fetchProjects(); // Fetch projects after admin confirmed
+                    return true;
+                } else {
+                    window.location.href = 'login.html';
+                    return false;
+                }
+            } catch (error) {
+                console.error('Error checking admin session:', error);
+                window.location.href = 'login.html';
+                return false;
+            }
+        }
+        
+        logoutButtonAdmin.addEventListener('click', async () => {
+            try {
+                await fetch(`${API_BASE_URL}/auth/logout`, { method: 'POST' });
+                window.location.href = 'login.html';
+            } catch (error) {
+                console.error('Logout error:', error);
+                alert('Gagal logout.');
+            }
+        });
+
+
+        async function fetchProjects() { // Fetches projects already assessed
             loadingIndicator.style.display = 'block';
             noProjectsMessageRow.style.display = 'table-row'; 
-            noProjectsMessageRow.cells[0].textContent = 'Sedang memuat data project...';
+            noProjectsMessageRow.cells[0].textContent = 'Sedang memuat data project yang telah dinilai...';
+            projectListTableBody.innerHTML = '';
+            projectListTableBody.appendChild(noProjectsMessageRow);
 
             try {
-                const response = await fetch(API_BASE_URL_MANAJEMEN);
+                const response = await fetch(`${API_BASE_URL}/projects`); // Admin GET all assessed projects
                 const resultText = await response.text();
                 let projects;
                 try {
@@ -124,8 +221,8 @@
                 if (!response.ok) {
                     throw new Error(projects.error || `HTTP error! status: ${response.status}`);
                 }
-                allFetchedProjects = projects; // Simpan data asli
-                filterAndSearchProjects(); // Render berdasarkan filter (awalnya tanpa filter)
+                allFetchedProjects = projects; 
+                filterAndSearchProjects(); 
             } catch (error) {
                 console.error('Gagal memuat daftar project:', error);
                 projectListTableBody.innerHTML = ''; 
@@ -142,7 +239,7 @@
 
             if (projectsToRender.length === 0) {
                 noProjectsMessageRow.style.display = 'table-row';
-                noProjectsMessageRow.cells[0].textContent = (allFetchedProjects.length === 0 && !searchProjectInput.value && !filterStatusSelect.value) ? 'Belum ada project tersimpan.' : 'Tidak ada project yang cocok dengan filter.';
+                noProjectsMessageRow.cells[0].textContent = (allFetchedProjects.length === 0 && !searchProjectInput.value && !filterStatusSelect.value) ? 'Belum ada project yang dinilai.' : 'Tidak ada project yang cocok dengan filter.';
                 projectListTableBody.appendChild(noProjectsMessageRow); 
                 return;
             }
@@ -153,7 +250,9 @@
                 row.className = 'bg-white hover:bg-gray-50 transition-colors duration-150';
 
                 row.insertCell().textContent = project.project_id; 
-                row.insertCell().textContent = project.project_name;
+                row.insertCell().textContent = project.project_name; // Nama project hasil penilaian
+                row.insertCell().textContent = project.submission_title || '(Tidak dari unggahan)'; // Judul asli dari submission
+                row.insertCell().textContent = project.student_name || '-'; // Nama mahasiswa dari submission
                 
                 const scoreCell = row.insertCell();
                 scoreCell.innerHTML = `<span class="font-semibold ${project.overall_total_score >= 64 ? 'text-green-600' : 'text-red-600'}">${project.overall_total_score}</span>`;
@@ -170,23 +269,17 @@
                                               <span class="relative">ULANG</span>
                                           </span>`;
                 }
-                row.insertCell().textContent = project.examiner_name || '-';
-                row.insertCell().textContent = project.updated_at ? new Date(project.updated_at).toLocaleString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '-';
+                row.insertCell().textContent = project.examiner_name || loggedInAdmin?.nama_lengkap || '-'; // Nama penguji dari tabel projects atau admin yg login
                 
                 const actionCell = row.insertCell();
-                actionCell.innerHTML = `<button class="text-blue-600 hover:text-blue-800 font-semibold text-sm focus:outline-none mr-2" onclick="viewProjectDetails('${project.project_id}')">Detail</button>
+                actionCell.innerHTML = `<button class="text-blue-600 hover:text-blue-800 font-semibold text-sm focus:outline-none mr-2" onclick="viewOrEditProjectDetails('${project.project_id}', false)">Edit</button>
+                                        <button class="text-yellow-600 hover:text-yellow-800 font-semibold text-sm focus:outline-none mr-2" onclick="viewOrEditProjectDetails('${project.project_id}', true)">Detail</button>
                                         <button class="text-red-600 hover:text-red-800 font-semibold text-sm focus:outline-none" onclick="deleteProject('${project.project_id}')">Hapus</button>`;
                 
                 Array.from(row.cells).forEach(cell => {
-                    cell.className += ' px-4 py-3 border-b border-gray-200 text-xs sm:text-sm'; // Padding dan font size disesuaikan
+                    cell.className += ' px-4 py-3 border-b border-gray-200 text-xs sm:text-sm';
                 });
-                row.cells[0].classList.add('text-left');
-                row.cells[1].classList.add('text-left');
-                row.cells[2].classList.add('text-center');
-                row.cells[3].classList.add('text-center');
-                row.cells[4].classList.add('text-left');
-                row.cells[5].classList.add('text-left');
-                row.cells[6].classList.add('text-center');
+                // Adjust text alignment for specific columns if needed
             });
         }
 
@@ -195,7 +288,7 @@
             const statusFilter = filterStatusSelect.value;
 
             const filteredProjects = allFetchedProjects.filter(project => {
-                const nameMatch = project.project_name.toLowerCase().includes(searchTerm);
+                const nameMatch = project.project_name.toLowerCase().includes(searchTerm) || (project.submission_title && project.submission_title.toLowerCase().includes(searchTerm));
                 const statusMatch = statusFilter ? project.status === statusFilter : true;
                 return nameMatch && statusMatch;
             });
@@ -203,10 +296,10 @@
         }
         
         async function deleteProject(projectId) {
-            if (confirm(`Apakah Anda yakin ingin menghapus project dengan ID ${projectId}?`)) {
+            if (confirm(`Apakah Anda yakin ingin menghapus project penilaian dengan ID ${projectId}? Ini juga akan mereset status unggahan terkait (jika ada).`)) {
                 loadingIndicator.style.display = 'block';
                 try {
-                    const response = await fetch(`${API_BASE_URL_MANAJEMEN}/${projectId}`, {
+                    const response = await fetch(`${API_BASE_URL}/projects/${projectId}`, {
                         method: 'DELETE'
                     });
                     const resultText = await response.text();
@@ -232,14 +325,67 @@
             }
         }
 
-        function viewProjectDetails(projectId) {
-            window.location.href = `lembar_penilaian.html?projectId=${projectId}&view=true`;
+        function viewOrEditProjectDetails(projectId, isViewMode) {
+            window.location.href = `lembar_penilaian.html?projectId=${projectId}${isViewMode ? '&view=true' : ''}`;
         }
+
+        // Modal Functionality
+        openSubmissionModalBtn.onclick = async function() {
+            submissionModal.style.display = "block";
+            await fetchSubmissionsToAssess();
+        }
+        closeSubmissionModalBtn.onclick = function() {
+            submissionModal.style.display = "none";
+        }
+        window.onclick = function(event) {
+            if (event.target == submissionModal) {
+                submissionModal.style.display = "none";
+            }
+        }
+
+        async function fetchSubmissionsToAssess() {
+            loadingSubmissionsIndicator.style.display = 'block';
+            submissionsToAssessTableBody.innerHTML = '';
+            noSubmissionsToAssessMsg.style.display = 'none';
+            try {
+                const response = await fetch(`${API_BASE_URL}/submissions?status=belum_dinilai`);
+                const submissions = await response.json();
+                if (!response.ok) throw new Error(submissions.error || 'Gagal mengambil data unggahan.');
+
+                if (submissions.length === 0) {
+                    noSubmissionsToAssessMsg.style.display = 'block';
+                } else {
+                    submissions.forEach(sub => {
+                        const row = submissionsToAssessTableBody.insertRow();
+                        row.insertCell().textContent = sub.submission_id;
+                        row.insertCell().textContent = sub.project_title;
+                        row.insertCell().textContent = sub.nama_mahasiswa; // Nama mahasiswa dari join di API
+                        row.insertCell().textContent = sub.nrp_mahasiswa;   // NRP mahasiswa dari join di API
+                        row.insertCell().textContent = new Date(sub.upload_timestamp).toLocaleDateString('id-ID');
+                        const actionCell = row.insertCell();
+                        const assessButton = document.createElement('button');
+                        assessButton.textContent = 'Nilai Proyek Ini';
+                        assessButton.className = 'btn bg-green-500 hover:bg-green-600 text-white text-xs py-1 px-2 rounded';
+                        assessButton.onclick = () => {
+                            window.location.href = `lembar_penilaian.html?submission_id=${sub.submission_id}`;
+                            submissionModal.style.display = "none";
+                        };
+                        actionCell.appendChild(assessButton);
+                    });
+                }
+            } catch (error) {
+                console.error("Error fetching submissions to assess:", error);
+                submissionsToAssessTableBody.innerHTML = `<tr><td colspan="6" class="text-red-500 text-center p-3">Error: ${error.message}</td></tr>`;
+            } finally {
+                loadingSubmissionsIndicator.style.display = 'none';
+            }
+        }
+
 
         searchProjectInput.addEventListener('input', filterAndSearchProjects);
         filterStatusSelect.addEventListener('change', filterAndSearchProjects);
 
-        fetchProjects();
+        checkAdminLoginStatus(); // Initial call
     </script>
 </body>
 </html>

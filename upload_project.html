@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Proyek Baru</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style_user.css"> 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+        }
+        .user-info { padding: 10px; background-color: #e9ecef; border-radius: 5px; margin-bottom:20px; text-align: center; }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="user-page-container py-8 px-4"> 
+        <div class="user-card max-w-3xl mx-auto">    
+            
+            <header class="mb-8 pb-6 border-b border-gray-200">
+                <h1 class="main-page-title text-3xl md:text-4xl font-bold text-gray-800 text-center">Upload Project</h1>
+            </header>
+
+            <div id="userInfo" class="user-info" style="display:none;">
+                Mengunggah sebagai: <strong id="userFullName"></strong> (<span id="userNrpDisplay"></span>)
+            </div>
+            
+            <form id="uploadProjectForm" enctype="multipart/form-data">
+                <div class="form-section mb-6">
+                    <label for="projectTitle" class="form-label text-gray-700 font-semibold">Judul Proyek:</label>
+                    <input type="text" id="projectTitle" name="projectTitle" class="form-control mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="Masukkan Judul Proyek Anda" required>
+                </div>
+
+                <div class="form-section mb-6">
+                    <label class="form-label text-gray-700 font-semibold">Jenis Pengerjaan:</label>
+                    <div class="radio-group mt-2 flex gap-x-6">
+                        <label for="jenisIndividu" class="flex items-center cursor-pointer">
+                            <input type="radio" id="jenisIndividu" name="jenisPengerjaan" value="individu" class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500" checked> 
+                            <span class="ml-2 text-gray-700">Individu</span>
+                        </label>
+                        <label for="jenisKelompok" class="flex items-center cursor-pointer">
+                            <input type="radio" id="jenisKelompok" name="jenisPengerjaan" value="kelompok" class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"> 
+                            <span class="ml-2 text-gray-700">Kelompok</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div id="individuFields" class="form-section space-y-4">
+                    <div class="form-group">
+                        <label for="namaIndividu" class="form-label text-gray-700 font-semibold">Nama Mahasiswa:</label>
+                        <input type="text" id="namaIndividu" name="namaIndividu" class="form-control mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="Nama sesuai akun" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="nrpIndividu" class="form-label text-gray-700 font-semibold">NRP Mahasiswa:</label>
+                        <input type="text" id="nrpIndividu" name="nrpIndividu" class="form-control mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="NRP sesuai akun" readonly>
+                    </div>
+                </div>
+
+                <div id="kelompokFields" class="form-section space-y-4" style="display: none;">
+                    <h3 class="section-subtitle text-lg font-semibold text-gray-700 border-b pb-2 mb-4">Data Ketua Kelompok (Anda)</h3>
+                    <div class="form-group">
+                        <label for="namaKetua" class="form-label text-gray-700 font-semibold">Nama Ketua:</label>
+                        <input type="text" id="namaKetua" name="namaKetua" class="form-control mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="Nama sesuai akun" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="nrpKetua" class="form-label text-gray-700 font-semibold">NRP Ketua:</label>
+                        <input type="text" id="nrpKetua" name="nrpKetua" class="form-control mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="NRP sesuai akun" readonly>
+                    </div>
+
+                    <h3 class="section-subtitle text-lg font-semibold text-gray-700 border-b pb-2 mb-4 mt-6">Data Anggota Kelompok (Selain Anda)</h3>
+                    <div id="anggotaContainer" class="space-y-4">
+                        </div>
+                    <button type="button" id="addAnggotaBtn" class="btn btn-secondary btn-sm mt-4 inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded shadow-sm text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                        <i class="fas fa-plus mr-2"></i> Tambah Anggota
+                    </button>
+                </div>
+
+                <div class="form-section mt-6">
+                    <label for="deskripsiTugas" class="form-label text-gray-700 font-semibold">Deskripsi Tugas:</label>
+                    <textarea id="deskripsiTugas" name="deskripsiTugas" rows="4" class="form-control mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="Jelaskan mengenai project Anda..."></textarea>
+                </div>
+
+                <div class="form-section mt-6">
+                    <label for="fileUpload" class="form-label text-gray-700 font-semibold">Upload File Proyek:</label>
+                    <input type="file" id="fileUpload" name="fileUpload" class="form-control-file mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" required>
+                    <small class="form-text text-xs text-gray-500 mt-1">Format yang didukung: .zip, .rar, .pdf, .doc, .docx (Maks: 10MB)</small>
+                </div>
+                
+                <div id="uploadMessage" class="mt-4 text-sm" style="display:none;"></div>
+
+                <div class="form-actions mt-8 text-right">
+                    <button type="submit" id="submitUploadBtn" class="btn btn-primary inline-flex items-center justify-center px-6 py-2.5 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        <i class="fas fa-upload mr-2"></i> Upload Proyek
+                    </button>
+                </div>
+            </form>
+
+            <div class="navigation-link-bottom mt-10 pt-6 border-t border-gray-200 text-center">
+                <a href="riwayat_penilaian.html" class="btn btn-outline-secondary inline-flex items-center px-6 py-2.5 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    <i class="fas fa-history mr-2"></i> Lihat Riwayat Proyek
+                </a>
+                 <button id="logoutButton" class="btn btn-danger inline-flex items-center px-6 py-2.5 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 ml-3">
+                    <i class="fas fa-sign-out-alt mr-2"></i> Logout
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async function () {
+            const API_BASE_URL = 'API.php'; // Sesuaikan path jika API.php tidak di root
+            const jenisIndividuRadio = document.getElementById('jenisIndividu');
+            const jenisKelompokRadio = document.getElementById('jenisKelompok');
+            const individuFields = document.getElementById('individuFields');
+            const kelompokFields = document.getElementById('kelompokFields');
+            const addAnggotaBtn = document.getElementById('addAnggotaBtn');
+            const anggotaContainer = document.getElementById('anggotaContainer');
+            const uploadForm = document.getElementById('uploadProjectForm');
+            const submitUploadBtn = document.getElementById('submitUploadBtn');
+            const uploadMessageDiv = document.getElementById('uploadMessage');
+            
+            const userInfoDiv = document.getElementById('userInfo');
+            const userFullNameDisplay = document.getElementById('userFullName');
+            const userNrpDisplay = document.getElementById('userNrpDisplay');
+            
+            const namaIndividuInput = document.getElementById('namaIndividu');
+            const nrpIndividuInput = document.getElementById('nrpIndividu');
+            const namaKetuaInput = document.getElementById('namaKetua');
+            const nrpKetuaInput = document.getElementById('nrpKetua');
+            const logoutButton = document.getElementById('logoutButton');
+
+            let anggotaCount = 0; 
+            let loggedInUser = null;
+
+            async function checkLoginStatus() {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/auth/session`);
+                    const data = await response.json();
+                    if (data.loggedIn && data.user.role === 'mahasiswa') {
+                        loggedInUser = data.user;
+                        userFullNameDisplay.textContent = loggedInUser.nama_lengkap;
+                        userNrpDisplay.textContent = loggedInUser.nrp;
+                        userInfoDiv.style.display = 'block';
+
+                        // Pre-fill fields based on logged-in user
+                        namaIndividuInput.value = loggedInUser.nama_lengkap;
+                        nrpIndividuInput.value = loggedInUser.nrp;
+                        namaKetuaInput.value = loggedInUser.nama_lengkap;
+                        nrpKetuaInput.value = loggedInUser.nrp;
+                        return true;
+                    } else {
+                        window.location.href = 'login.html'; // Redirect if not logged in or not mahasiswa
+                        return false;
+                    }
+                } catch (error) {
+                    console.error('Error checking session:', error);
+                    window.location.href = 'login.html'; // Redirect on error
+                    return false;
+                }
+            }
+
+            if (!await checkLoginStatus()) {
+                return; // Stop further execution if not logged in
+            }
+            
+            logoutButton.addEventListener('click', async () => {
+                try {
+                    await fetch(`${API_BASE_URL}/auth/logout`, { method: 'POST' });
+                    window.location.href = 'login.html';
+                } catch (error) {
+                    console.error('Logout error:', error);
+                    alert('Gagal logout.');
+                }
+            });
+
+
+            function toggleFields() {
+                if (jenisIndividuRadio.checked) {
+                    individuFields.style.display = 'block';
+                    kelompokFields.style.display = 'none';
+                    anggotaContainer.innerHTML = ''; // Hapus semua anggota jika kembali ke individu
+                    anggotaCount = 0;
+                } else { // Kelompok
+                    individuFields.style.display = 'none';
+                    kelompokFields.style.display = 'block';
+                    if (anggotaCount === 0 && anggotaContainer.children.length === 0) { // Tambah 1 anggota default jika belum ada
+                        addAnggotaField();
+                    }
+                }
+            }
+            
+            function addAnggotaField() {
+                anggotaCount++;
+                const newAnggotaItem = document.createElement('div');
+                newAnggotaItem.classList.add('anggota-item', 'p-4', 'border', 'border-gray-200', 'rounded-md', 'bg-gray-50', 'mt-4');
+                newAnggotaItem.innerHTML = `
+                    <hr class="item-divider my-3 border-gray-300">
+                    <div class="anggota-item-header flex justify-between items-center mb-3">
+                        <h4 class="anggota-title text-md font-semibold text-gray-600">Anggota ${anggotaCount}</h4>
+                        <button type="button" class="btn-danger btn-sm remove-anggota-btn inline-flex items-center px-2 py-1 border border-transparent text-xs font-medium rounded shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                            <i class="fas fa-times mr-1"></i> Hapus
+                        </button>
+                    </div>
+                    <div class="form-group mb-2">
+                        <label for="namaAnggota${anggotaCount}" class="form-label text-sm text-gray-600">Nama Anggota:</label>
+                        <input type="text" id="namaAnggota${anggotaCount}" name="namaAnggota[]" class="form-control mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="Nama Anggota">
+                    </div>
+                    <div class="form-group">
+                        <label for="nrpAnggota${anggotaCount}" class="form-label text-sm text-gray-600">NRP Anggota:</label>
+                        <input type="text" id="nrpAnggota${anggotaCount}" name="nrpAnggota[]" class="form-control mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="NRP Anggota">
+                    </div>
+                `;
+                anggotaContainer.appendChild(newAnggotaItem);
+                newAnggotaItem.querySelector('.remove-anggota-btn').addEventListener('click', function() {
+                    this.closest('.anggota-item').remove();
+                    // Tidak perlu decrement anggotaCount jika tidak digunakan untuk generate ID unik lagi
+                });
+            }
+
+
+            jenisIndividuRadio.addEventListener('change', toggleFields);
+            jenisKelompokRadio.addEventListener('change', toggleFields);
+            toggleFields(); 
+
+            if (addAnggotaBtn) {
+                addAnggotaBtn.addEventListener('click', addAnggotaField);
+            }
+
+            if (uploadForm) {
+                uploadForm.addEventListener('submit', async function(event) {
+                    event.preventDefault();
+                    if (!loggedInUser) {
+                        alert("Sesi tidak valid. Silakan login kembali.");
+                        window.location.href = 'login.html';
+                        return;
+                    }
+
+                    submitUploadBtn.disabled = true;
+                    submitUploadBtn.innerHTML = '<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Mengunggah...';
+                    uploadMessageDiv.style.display = 'none';
+                    uploadMessageDiv.textContent = '';
+                    uploadMessageDiv.className = 'mt-4 text-sm';
+
+
+                    const formData = new FormData(this);
+                    // user_identifier (NRP pengaju) akan diambil dari sesi di backend
+                    // formData.append('user_identifier_nrp', loggedInUser.nrp); // Tidak perlu dikirim, backend pakai session
+
+                    console.log("Data Form yang akan dikirim:");
+                    for (let [key, value] of formData.entries()) {
+                        console.log(key, value instanceof File ? value.name : value);
+                    }
+
+                    try {
+                        const response = await fetch(`${API_BASE_URL}/submissions`, {
+                            method: 'POST',
+                            body: formData 
+                        });
+
+                        const resultText = await response.text();
+                        let result;
+                        try {
+                            result = JSON.parse(resultText);
+                        } catch (e) {
+                            console.error("Gagal parse JSON dari server (upload):", resultText);
+                            throw new Error("Respons server tidak valid (upload). Isi: " + resultText.substring(0,200) );
+                        }
+
+                        if (!response.ok) {
+                            throw new Error(result.error || `HTTP error! status: ${response.status}`);
+                        }
+                        
+                        console.log('Success:', result);
+                        uploadMessageDiv.textContent = result.message || 'Proyek berhasil diupload!';
+                        uploadMessageDiv.classList.add('text-green-600');
+                        uploadMessageDiv.style.display = 'block';
+                        
+                        uploadForm.reset(); 
+                        toggleFields(); 
+                        // Pre-fill lagi setelah reset
+                        namaIndividuInput.value = loggedInUser.nama_lengkap;
+                        nrpIndividuInput.value = loggedInUser.nrp;
+                        namaKetuaInput.value = loggedInUser.nama_lengkap;
+                        nrpKetuaInput.value = loggedInUser.nrp;
+
+                        setTimeout(() => {
+                             window.location.href = 'riwayat_penilaian.html'; 
+                        }, 2000);
+
+
+                    } catch (error) {
+                        console.error('Error:', error);
+                        uploadMessageDiv.textContent = `Gagal mengupload proyek: ${error.message}`;
+                        uploadMessageDiv.classList.add('text-red-600');
+                        uploadMessageDiv.style.display = 'block';
+                    } finally {
+                        submitUploadBtn.disabled = false;
+                        submitUploadBtn.innerHTML = '<i class="fas fa-upload mr-2"></i> Upload Proyek';
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

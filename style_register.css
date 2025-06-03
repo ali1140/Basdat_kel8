@@ -1,0 +1,183 @@
+/* style_register.css */
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f0f2f5; /* Latar belakang fallback */
+    overflow: hidden;
+}
+
+.container {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+}
+
+.left-panel {
+    flex-basis: 55%; /* Lebih banyak ruang untuk ilustrasi */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #ffffff; /* Latar belakang panel kiri */
+    padding: 40px;
+    box-sizing: border-box;
+}
+
+.illustration-img {
+    max-width: 80%;
+    max-height: 80%;
+    object-fit: contain;
+}
+
+.right-panel {
+    flex-basis: 45%; /* Ruang untuk form registrasi */
+    background-color: #007bff; /* Warna biru utama (sesuaikan dengan gambar) */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+    box-sizing: border-box;
+    /* Efek kurva seperti pada gambar login sebelumnya */
+    border-top-left-radius: 30px;
+    border-bottom-left-radius: 30px;
+    position: relative;
+}
+
+.register-box {
+    background-color: #ffffff;
+    padding: 35px 30px;
+    border-radius: 15px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    width: 100%;
+    max-width: 380px; /* Lebar maksimum box registrasi */
+    text-align: left;
+}
+
+.register-box h1 {
+    font-size: 28px;
+    font-weight: bold;
+    margin-top: 0;
+    margin-bottom: 5px;
+    color: #333;
+}
+
+.register-box h2 {
+    font-size: 16px; /* Lebih kecil dari h1 */
+    font-weight: normal;
+    margin-top: 0;
+    margin-bottom: 25px;
+    color: #555;
+}
+
+.input-group {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.input-group i {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #aaa;
+    font-size: 16px;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 12px 12px 12px 45px; /* Padding kiri untuk ruang ikon */
+    border: 1px solid #ddd;
+    border-radius: 8px; /* Border radius input field */
+    box-sizing: border-box;
+    font-size: 16px;
+    color: #333;
+}
+
+.input-group input:focus {
+    outline: none;
+    border-color: #007bff; /* Warna border saat fokus */
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.register-button {
+    width: 100%;
+    padding: 12px;
+    background-color: #007bff; /* Warna tombol (sesuaikan dengan gambar) */
+    color: white;
+    border: none;
+    border-radius: 8px; /* Border radius tombol */
+    font-size: 17px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 10px;
+}
+
+.register-button:hover {
+    background-color: #0056b3; /* Warna tombol saat hover */
+}
+
+.login-link { /* Styling untuk link login opsional */
+    text-align: center;
+    margin-top: 20px;
+    font-size: 14px;
+    color: #555;
+}
+
+.login-link a {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.login-link a:hover {
+    text-decoration: underline;
+}
+
+.action-link-container {
+    margin-top: 20px; /* Jarak dari field terakhir */
+    text-align: center; /* Membuat link di tengah jika berupa inline-block */
+}
+
+.btn-link-to-login {
+    display: inline-block; /* Agar bisa diatur padding dan marginnya */
+    width: 100%; /* Atau 'auto' jika tidak ingin full-width */
+    box-sizing: border-box; /* Agar padding tidak menambah width */
+    padding: 12px;
+    background-color: #007bff; /* Sama seperti .register-button */
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 17px;
+    font-weight: bold;
+    text-align: center;
+    text-decoration: none; /* Hapus garis bawah default link */
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.btn-link-to-login:hover {
+    background-color: #0056b3; /* Sama seperti hover .register-button */
+    text-decoration: none; /* Pastikan tidak ada garis bawah saat hover */
+}
+/* Penyesuaian untuk layar yang lebih kecil */
+@media (max-width: 900px) {
+    .container {
+        flex-direction: column;
+    }
+
+    .left-panel {
+        display: none; /* Sembunyikan panel kiri untuk fokus pada form */
+    }
+
+    .right-panel {
+        flex-basis: 100%;
+        height: 100vh;
+        border-radius: 0; /* Hapus border radius jika panel kiri disembunyikan */
+    }
+
+    .register-box {
+        padding: 30px 25px;
+    }
+}
