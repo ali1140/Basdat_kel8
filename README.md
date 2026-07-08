@@ -22,8 +22,7 @@ Sistem Penilaian Proyek adalah aplikasi web berbasis *Client-Server* yang diranc
 
 ### Entity Relationship Diagram (ERD)
 Arsitektur basis data dirancang untuk menjaga normalisasi data melalui relasi antara tabel `users`, `submissions`, `projects`, `project_parameters`, dan `sub_aspects`.
-![ERD System](assets/basdat_1.jpeg)
-![ERD Workflow](assets/basdat_2.png)
+<img width="1894" height="886" alt="basdat_2" src="https://github.com/user-attachments/assets/161e4e8a-29ff-4eb1-93fe-2d4a675c45bf" />
 
 ### Antarmuka Pengguna (User Interface)
 
